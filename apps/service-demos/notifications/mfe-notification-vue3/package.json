@@ -8,11 +8,12 @@
     "build:watch": "node build.js --watch"
   },
   "dependencies": {
+    "@mfe-toolkit/core": "workspace:*",
+    "@mfe-toolkit/service-notification": "workspace:*",
     "vue": "^3.4.0"
   },
   "devDependencies": {
     "@mfe-toolkit/build": "workspace:*",
-    "@mfe-toolkit/core": "workspace:*",
     "@vitejs/plugin-vue": "^5.0.0",
     "esbuild": "^0.24.2",
     "esbuild-plugin-vue3": "^0.4.2"

@@ -1,4 +1,4 @@
-import { Logger } from '../types';
+import type { Logger } from './registry/types';
 
 export const createLogger = (prefix: string): Logger => {
   const formatMessage = (level: string, message: string) => {

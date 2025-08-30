@@ -8,7 +8,7 @@
       "DOM.Iterable"
     ],
     "jsx": "react",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useUI } from '@/contexts/UIContext';
 import { RegistryMFELoader } from '@/components/RegistryMFELoader';
 import { EventLog, TabGroup } from '@mfe/design-system-react';
-import { getMFEServicesSingleton } from '@/services/mfe-services-singleton';
+import { getSharedServices } from '@/services/shared-services';
 
 // Types
 type LayoutMode = 'grid' | 'stacked' | 'focus';
@@ -11,7 +11,7 @@ type LayoutMode = 'grid' | 'stacked' | 'focus';
 type EventMessage = {
   id: string;
   event: string;
-  data?: any;
+  data: any; // Make data required to match EventLog component
   timestamp: string;
   source: string;
 };
@@ -71,11 +71,11 @@ const MAX_RENDERED_EVENTS = 50; // Maximum number of events to render at once
 
 export const EventBusPageV3: React.FC = () => {
   const { addNotification } = useUI();
-  const services = useMemo(() => getMFEServicesSingleton(), []);
+  const serviceContainer = useMemo(() => getSharedServices(), []);
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Core state
-  const [activeScenario, setActiveScenario] = useState<string>('trading');
+  const [activeScenario] = useState<string>('trading');
   const [events, setEvents] = useState<EventMessage[]>(() => {
     const loaded = StorageManager.load(STORAGE_KEY);
     return loaded.slice(0, MAX_EVENTS); // Limit initial load
@@ -88,8 +88,8 @@ export const EventBusPageV3: React.FC = () => {
   const [apiReferenceHeight, setApiReferenceHeight] = useState(75); // 75% of viewport
   const [isDraggingEventLog, setIsDraggingEventLog] = useState(false);
   const [isDraggingApi, setIsDraggingApi] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
+  const [searchTerm] = useState('');
+  const [filterType] = useState<string>('all');
   
   // Container playground state
   const [containerEventName, setContainerEventName] = useState('container:test');
@@ -116,7 +116,8 @@ export const EventBusPageV3: React.FC = () => {
   const sendContainerEvent = () => {
     try {
       const payload = JSON.parse(containerPayload);
-      services.eventBus.emit(containerEventName, payload);
+      const eventBus = serviceContainer.get('eventBus');
+      eventBus?.emit(containerEventName, payload);
       
       // Add to container event history
       const newEvent: EventMessage = {
@@ -170,14 +171,15 @@ export const EventBusPageV3: React.FC = () => {
     listeningEvents.forEach(eventPattern => {
       // If it's a pattern, subscribe to all events and filter
       if (eventPattern.endsWith(':*')) {
-        const unsubscribe = services.eventBus.on('*', (payload) => {
-          const actualEventName = payload.type || payload.eventName || 'unknown';
+        const eventBus = serviceContainer.get('eventBus');
+        const unsubscribe = eventBus?.on('*', (event: any) => {
+          const actualEventName = event.type;
           if (matchesPattern(actualEventName, eventPattern)) {
             // Add to container event history
             const newEvent: EventMessage = {
               id: `${Date.now()}-${Math.random()}`,
               event: actualEventName,
-              data: payload.data || payload,
+              data: event.data,
               timestamp: new Date().toLocaleTimeString(),
               source: 'received'
             };
@@ -190,15 +192,16 @@ export const EventBusPageV3: React.FC = () => {
             });
           }
         });
-        unsubscribes.push(unsubscribe);
+        if (unsubscribe) unsubscribes.push(unsubscribe);
       } else {
         // For exact event names, subscribe directly
-        const unsubscribe = services.eventBus.on(eventPattern, (payload) => {
+        const eventBus = serviceContainer.get('eventBus');
+        const unsubscribe = eventBus?.on(eventPattern, (event: any) => {
           // Add to container event history
           const newEvent: EventMessage = {
             id: `${Date.now()}-${Math.random()}`,
-            event: payload.type || eventPattern,
-            data: payload.data || payload,
+            event: event.type || eventPattern,
+            data: event.data,
             timestamp: new Date().toLocaleTimeString(),
             source: 'received'
           };
@@ -207,17 +210,17 @@ export const EventBusPageV3: React.FC = () => {
           addNotification({
             type: 'info',
             title: `Event Received: ${eventPattern}`,
-            message: JSON.stringify(payload, null, 2).substring(0, 100)
+            message: JSON.stringify(event, null, 2).substring(0, 100)
           });
         });
-        unsubscribes.push(unsubscribe);
+        if (unsubscribe) unsubscribes.push(unsubscribe);
       }
     });
     
     return () => {
       unsubscribes.forEach(unsub => unsub());
     };
-  }, [listeningEvents, services, addNotification]);
+  }, [listeningEvents, serviceContainer, addNotification]);
   
   // Initialize selectedMFE when switching to focus mode
   useEffect(() => {
@@ -297,9 +300,10 @@ export const EventBusPageV3: React.FC = () => {
       });
     };
 
-    const unsubscribe = services.eventBus.on('*', handleEvent);
-    return () => unsubscribe();
-  }, [services, activeScenario]);
+    const eventBus = serviceContainer.get('eventBus');
+    const unsubscribe = eventBus?.on('*', handleEvent);
+    return () => unsubscribe?.();
+  }, [serviceContainer, activeScenario]);
 
   // Filtered and limited events for rendering
   const filteredEvents = useMemo(() => {
@@ -456,7 +460,7 @@ export const EventBusPageV3: React.FC = () => {
                     <div className="ds-p-3 ds-bg-slate-50 ds-rounded-lg">
                       <div className="ds-text-xs ds-font-semibold ds-mb-2">Emit Event</div>
                       <pre className="ds-text-xs ds-bg-white ds-p-2 ds-rounded ds-border">
-{`services.eventBus.emit('event:type', {
+{`serviceContainer.eventBus.emit('event:type', {
   data: 'your payload',
   timestamp: Date.now()
 });`}
@@ -469,7 +473,7 @@ export const EventBusPageV3: React.FC = () => {
                     <div className="ds-p-3 ds-bg-slate-50 ds-rounded-lg">
                       <div className="ds-text-xs ds-font-semibold ds-mb-2">Subscribe to Event</div>
                       <pre className="ds-text-xs ds-bg-white ds-p-2 ds-rounded ds-border">
-{`const unsubscribe = services.eventBus.on(
+{`const unsubscribe = serviceContainer.get('eventBus').on(
   'event:type',
   (payload) => {
     console.log('Received:', payload.data);
@@ -487,7 +491,7 @@ unsubscribe();`}
                     <div className="ds-p-3 ds-bg-slate-50 ds-rounded-lg">
                       <div className="ds-text-xs ds-font-semibold ds-mb-2">Listen to All Events</div>
                       <pre className="ds-text-xs ds-bg-white ds-p-2 ds-rounded ds-border">
-{`services.eventBus.on('*', (payload) => {
+{`serviceContainer.eventBus.on('*', (payload) => {
   console.log(\`Event \${payload.type}:\`, payload.data);
 });`}
                       </pre>
@@ -499,7 +503,7 @@ unsubscribe();`}
                     <div className="ds-p-3 ds-bg-slate-50 ds-rounded-lg">
                       <div className="ds-text-xs ds-font-semibold ds-mb-2">One-Time Event Listener</div>
                       <pre className="ds-text-xs ds-bg-white ds-p-2 ds-rounded ds-border">
-{`services.eventBus.once('event:type', (payload) => {
+{`serviceContainer.eventBus.once('event:type', (payload) => {
   console.log('This fires only once:', payload);
 });`}
                       </pre>
@@ -512,10 +516,10 @@ unsubscribe();`}
                       <div className="ds-text-xs ds-font-semibold ds-mb-2">Remove All Listeners</div>
                       <pre className="ds-text-xs ds-bg-white ds-p-2 ds-rounded ds-border">
 {`// Remove all listeners for a specific event
-services.eventBus.off('event:type');
+serviceContainer.get('eventBus').off('event:type');
 
 // Remove all listeners for all events
-services.eventBus.off('*');`}
+serviceContainer.get('eventBus').off('*');`}
                       </pre>
                       <div className="ds-text-xs ds-text-muted ds-mt-2">
                         Clean up multiple subscriptions at once. Useful in cleanup scenarios.
@@ -634,7 +638,7 @@ services.eventBus.off('*');`}
                       <div className="ds-text-xs ds-font-semibold ds-mb-2 ds-text-yellow-800">Event Filtering</div>
                       <pre className="ds-text-xs ds-bg-white ds-p-2 ds-rounded ds-border">
 {`// Subscribe only to specific stock events
-services.eventBus.on('market:*', (payload) => {
+serviceContainer.get('eventBus').on('market:*', (payload) => {
   if (payload.data?.symbol === 'AAPL') {
     handleAppleEvents(payload);
   }
@@ -646,14 +650,14 @@ services.eventBus.on('market:*', (payload) => {
                       <div className="ds-text-xs ds-font-semibold ds-mb-2 ds-text-yellow-800">Request-Response Pattern</div>
                       <pre className="ds-text-xs ds-bg-white ds-p-2 ds-rounded ds-border">
 {`// MFE A: Request data
-services.eventBus.emit('data:request', {
+serviceContainer.get('eventBus').emit('data:request', {
   requestId: 'req-123',
   type: 'portfolio'
 });
 
 // MFE B: Respond to request
-services.eventBus.on('data:request', (payload) => {
-  services.eventBus.emit('data:response', {
+serviceContainer.get('eventBus').on('data:request', (payload) => {
+  serviceContainer.get('eventBus').emit('data:response', {
     requestId: payload.data.requestId,
     data: getPortfolioData()
   });
@@ -665,15 +669,15 @@ services.eventBus.on('data:request', (payload) => {
                       <div className="ds-text-xs ds-font-semibold ds-mb-2 ds-text-yellow-800">Event Chaining</div>
                       <pre className="ds-text-xs ds-bg-white ds-p-2 ds-rounded ds-border">
 {`// Chain multiple events for workflows
-services.eventBus.on('trade:executed', async (payload) => {
+serviceContainer.get('eventBus').on('trade:executed', async (payload) => {
   // Update analytics
   await updateMetrics(payload.data);
-  services.eventBus.emit('analytics:updated', {
+  serviceContainer.get('eventBus').emit('analytics:updated', {
     tradeId: payload.data.orderId
   });
   
   // Trigger risk assessment
-  services.eventBus.emit('risk:assess', {
+  serviceContainer.get('eventBus').emit('risk:assess', {
     portfolio: getCurrentPortfolio()
   });
 });`}
@@ -725,14 +729,14 @@ services.eventBus.on('trade:executed', async (payload) => {
                         <strong>Debounce High-Frequency Events:</strong> Use debouncing for events that fire rapidly
                         <pre className="ds-text-xs ds-bg-white ds-p-2 ds-rounded ds-border ds-mt-1">
 {`const debouncedEmit = debounce((data) => {
-  services.eventBus.emit('search:query', data);
+  serviceContainer.get('eventBus').emit('search:query', data);
 }, 300);`}
                         </pre>
                       </li>
                       <li>
                         <strong>Batch Events:</strong> Combine multiple related events into one
                         <pre className="ds-text-xs ds-bg-white ds-p-2 ds-rounded ds-border ds-mt-1">
-{`services.eventBus.emit('trades:batch', {
+{`serviceContainer.eventBus.emit('trades:batch', {
   trades: [trade1, trade2, trade3]
 });`}
                         </pre>
@@ -753,10 +757,10 @@ services.eventBus.on('trade:executed', async (payload) => {
                   <div className="ds-p-3 ds-bg-slate-50 ds-rounded-lg">
                     <pre className="ds-text-xs ds-bg-white ds-p-3 ds-rounded ds-border ds-overflow-x-auto">
 {`// React Component Example
-const MyTradingComponent: React.FC<{ services: MFEServices }> = ({ services }) => {
+const MyTradingComponent: React.FC<{ serviceContainer: ServiceContainer }> = ({ serviceContainer }) => {
   useEffect(() => {
     // Subscribe to stock selection
-    const unsubStockSelected = services.eventBus.on(
+    const unsubStockSelected = serviceContainer.get('eventBus')?.on(
       'market:stock-selected',
       (payload) => {
         console.log('Stock selected:', payload.data.symbol);
@@ -765,7 +769,7 @@ const MyTradingComponent: React.FC<{ services: MFEServices }> = ({ services }) =
     );
 
     // Subscribe to trade execution
-    const unsubTradeExecuted = services.eventBus.on(
+    const unsubTradeExecuted = serviceContainer.get('eventBus')?.on(
       'trade:executed',
       (payload) => {
         const { symbol, quantity, price } = payload.data;
@@ -774,7 +778,7 @@ const MyTradingComponent: React.FC<{ services: MFEServices }> = ({ services }) =
     );
 
     // Emit an event
-    services.eventBus.emit('trade:placed', {
+    serviceContainer.get('eventBus')?.emit('trade:placed', {
       symbol: 'AAPL',
       quantity: 100,
       price: 150.00,
@@ -786,7 +790,7 @@ const MyTradingComponent: React.FC<{ services: MFEServices }> = ({ services }) =
       unsubStockSelected();
       unsubTradeExecuted();
     };
-  }, [services]);
+  }, [serviceContainer]);
 
   return <div>Your Component</div>;
 };`}
@@ -968,7 +972,7 @@ const MyTradingComponent: React.FC<{ services: MFEServices }> = ({ services }) =
                       </div>
                     )}
                     
-                    {currentScenario.mfes.map((mfe, index) => {
+                    {currentScenario.mfes.map((mfe) => {
                       const isFullWidth = mfe.position === 'full-width';
                       
                       return (

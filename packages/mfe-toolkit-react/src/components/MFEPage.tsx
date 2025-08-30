@@ -1,17 +1,17 @@
 import React from 'react';
 import { MFELoader } from './MFELoader';
-import { MFEServices, MFEManifest } from '../types';
+import type { ServiceContainer, MFEManifest } from '@mfe-toolkit/core';
 
 interface MFEPageProps {
   manifest: MFEManifest;
-  services: MFEServices;
+  serviceContainer: ServiceContainer;
   fallback?: React.ReactNode;
   isolate?: boolean;
 }
 
 export const MFEPage: React.FC<MFEPageProps> = ({
   manifest,
-  services,
+  serviceContainer,
   fallback,
   isolate = false,
 }) => {
@@ -19,13 +19,18 @@ export const MFEPage: React.FC<MFEPageProps> = ({
     <MFELoader
       name={manifest.name}
       url={manifest.url}
-      services={services}
+      serviceContainer={serviceContainer}
       fallback={fallback}
       isolate={isolate}
       onError={(error) => {
-        services.logger.error(`Failed to load MFE ${manifest.name}:`, error);
-        if (services.notification) {
-          services.notification.error('MFE Load Error', error.message);
+        const logger = serviceContainer.get('logger');
+        if (logger) {
+          logger.error(`Failed to load MFE ${manifest.name}:`, error);
+        }
+        // Try to use notification service if available
+        const notification = serviceContainer.get('notification' as any);
+        if (notification && typeof (notification as any).error === 'function') {
+          (notification as any).error('MFE Load Error', error.message);
         }
       }}
     />

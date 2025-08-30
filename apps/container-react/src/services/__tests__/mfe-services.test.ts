@@ -1,16 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
-  createMFEServices,
+  createSharedServices,
   setContextBridge,
   resetContextBridge,
   isContextBridgeReady,
   waitForContextBridge,
 } from '../mfe-services';
 import { ContextBridgeRef } from '../context-bridge';
-import { MFEServices } from '@mfe-toolkit/core';
+import { ServiceContainer } from '@mfe-toolkit/core';
 
 describe('MFE Services with Proxy Pattern', () => {
-  let services: MFEServices;
+  let services: ServiceContainer;
   let mockContextBridge: ContextBridgeRef;
 
   beforeEach(() => {
@@ -43,6 +43,8 @@ describe('MFE Services with Proxy Pattern', () => {
       error: vi.fn(),
       warning: vi.fn(),
       info: vi.fn(),
+      dismiss: vi.fn(),
+      dismissAll: vi.fn(),
     };
 
     // Create mock context bridge
@@ -58,7 +60,7 @@ describe('MFE Services with Proxy Pattern', () => {
       })),
     };
 
-    services = createMFEServices();
+    services = createSharedServices();
   });
 
   afterEach(() => {
@@ -86,16 +88,18 @@ describe('MFE Services with Proxy Pattern', () => {
 
   describe('Auth Service Proxy', () => {
     it('should return default values when bridge is not ready', () => {
-      expect(services.auth.getSession()).toBeNull();
-      expect(services.auth.isAuthenticated()).toBe(false);
-      expect(services.auth.hasPermission('any')).toBe(false);
-      expect(services.auth.hasRole('any')).toBe(false);
+      const auth = services.get('auth');
+      expect(auth?.getSession()).toBeNull();
+      expect(auth?.isAuthenticated()).toBe(false);
+      expect(auth?.hasPermission('any')).toBe(false);
+      expect(auth?.hasRole('any')).toBe(false);
     });
 
     it('should warn when called before bridge initialization', () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-      services.auth.getSession();
+      const auth = services.get('auth');
+      auth?.getSession();
 
       expect(consoleSpy).toHaveBeenCalledWith(
         'AuthService.getSession called before context bridge initialization'
@@ -107,10 +111,11 @@ describe('MFE Services with Proxy Pattern', () => {
     it('should delegate to context bridge when ready', () => {
       setContextBridge(mockContextBridge);
 
-      const session = services.auth.getSession();
+      const auth = services.get('auth');
+      const session = auth?.getSession();
 
       expect(session).toMatchObject({ username: 'test-user' });
-      expect(mockContextBridge.getAuthService).toHaveBeenCalled();
+      expect(mockContextBridge.getAuthenticationService).toHaveBeenCalled();
     });
   });
 
@@ -118,7 +123,8 @@ describe('MFE Services with Proxy Pattern', () => {
     it('should warn but not throw when called before initialization', () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-      expect(() => services.modal.open({ title: 'Test', content: 'Test content' })).not.toThrow();
+      const modal = services.get('modal');
+      expect(() => modal?.open({ title: 'Test', content: 'Test content' })).not.toThrow();
 
       expect(consoleSpy).toHaveBeenCalledWith(
         'ModalService.open called before context bridge initialization'
@@ -130,7 +136,8 @@ describe('MFE Services with Proxy Pattern', () => {
     it('should delegate to context bridge when ready', () => {
       setContextBridge(mockContextBridge);
 
-      services.modal.open({ title: 'Test', content: 'Test content' });
+      const modal = services.get('modal');
+      modal?.open({ title: 'Test', content: 'Test content' });
 
       // Get the mocked service and check it was called
       const modalService = mockContextBridge.getModalService();
@@ -142,11 +149,12 @@ describe('MFE Services with Proxy Pattern', () => {
     it('should handle all notification methods', () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-      services.notification.show({ title: 'Test', type: 'info' });
-      services.notification.success('Success', 'Message');
-      services.notification.error('Error', 'Message');
-      services.notification.warning('Warning', 'Message');
-      services.notification.info('Info', 'Message');
+      const notification = services.get('notification');
+      notification?.show({ title: 'Test', type: 'info' });
+      notification?.success('Success', 'Message');
+      notification?.error('Error', 'Message');
+      notification?.warning('Warning', 'Message');
+      notification?.info('Info', 'Message');
 
       expect(consoleSpy).toHaveBeenCalledTimes(5);
 
@@ -156,7 +164,8 @@ describe('MFE Services with Proxy Pattern', () => {
     it('should delegate all methods when bridge is ready', () => {
       setContextBridge(mockContextBridge);
 
-      services.notification.success('Success', 'Message');
+      const notification = services.get('notification');
+      notification?.success('Success', 'Message');
 
       // Get the mocked service and check it was called
       const notificationService = mockContextBridge.getNotificationService();
@@ -169,24 +178,30 @@ describe('MFE Services with Proxy Pattern', () => {
       setContextBridge(mockContextBridge);
 
       expect(() => {
-        (services.auth as any).nonExistentMethod();
+        const auth = services.get('auth') as any;
+        auth.nonExistentMethod();
       }).toThrow('AuthService.nonExistentMethod is not a function');
     });
   });
 
   describe('Service Consistency', () => {
-    it('should maintain standard MFEServices interface', () => {
-      // Verify services implement the standard interface
-      expect(services).toHaveProperty('logger');
-      expect(services).toHaveProperty('auth');
-      expect(services).toHaveProperty('eventBus');
-      expect(services).toHaveProperty('modal');
-      expect(services).toHaveProperty('notification');
-      expect(services).toHaveProperty('errorReporter');
+    it('should maintain ServiceContainer interface', () => {
+      // Verify services implement the ServiceContainer interface
+      expect(services).toHaveProperty('get');
+      expect(services).toHaveProperty('require');
+      expect(services).toHaveProperty('has');
+      expect(services).toHaveProperty('listAvailable');
+      expect(services).toHaveProperty('getAllServices');
+      expect(services).toHaveProperty('createScoped');
+      expect(services).toHaveProperty('dispose');
 
-      // Verify no additional properties leaked
-      expect(services).not.toHaveProperty('isReady');
-      expect(services).not.toHaveProperty('waitForReady');
+      // Verify services are accessible via get()
+      expect(services.get('logger')).toBeDefined();
+      expect(services.get('auth')).toBeDefined();
+      expect(services.get('eventBus')).toBeDefined();
+      expect(services.get('modal')).toBeDefined();
+      expect(services.get('notification')).toBeDefined();
+      expect(services.get('errorReporter')).toBeDefined();
     });
   });
 });

@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { HomePage } from '@/pages/HomePage';
@@ -8,7 +8,7 @@ import { EventBusPageV3 as EventBusPage } from '@/pages/services/EventBusPageV3'
 import { ModalPage } from '@/pages/services/ModalPage';
 import { NotificationsPage } from '@/pages/services/NotificationsPage';
 import { CompatibleMFELoader } from '@/components/CompatibleMFELoader';
-import { getMFEServicesSingleton } from '@/services/mfe-services-singleton';
+import { useServices } from '@/contexts/ServiceContext';
 import { useRegistryContext } from '@/contexts/RegistryContext';
 import { initializePlatformMetrics, updatePlatformMetric } from '@/store/platform-metrics';
 
@@ -16,7 +16,7 @@ import { initializePlatformMetrics, updatePlatformMetric } from '@/store/platfor
 function MFEPage() {
   const { mfeName } = useParams<{ mfeName: string }>();
   const { registry } = useRegistryContext();
-  const mfeServices = useMemo(() => getMFEServicesSingleton(), []);
+  const serviceContainer = useServices();
 
   if (!mfeName || !registry) {
     return (
@@ -38,7 +38,7 @@ function MFEPage() {
   return (
     <CompatibleMFELoader
       manifest={manifest}
-      services={mfeServices}
+      services={serviceContainer}
       fallback={
         <div className="flex items-center justify-center h-64">
           <div className="text-center">

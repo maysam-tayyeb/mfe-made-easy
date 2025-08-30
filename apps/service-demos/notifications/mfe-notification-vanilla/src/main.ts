@@ -1,4 +1,6 @@
-import type { MFEModule, MFEServiceContainer, MFEServices } from '@mfe-toolkit/core';
+import type { MFEModule, ServiceContainer, Logger } from '@mfe-toolkit/core';
+import type { NotificationService } from '@mfe-toolkit/service-notification/types';
+import '@mfe-toolkit/service-notification/types';
 
 // State management for the Vanilla TS MFE
 interface NotificationState {
@@ -15,7 +17,8 @@ const state: NotificationState = {
   customType: 'info'
 };
 
-let services: MFEServices | null = null;
+let notification: NotificationService | null = null;
+let logger: Logger | null = null;
 let rootElement: HTMLElement | null = null;
 
 // Helper function to show notifications
@@ -25,8 +28,8 @@ const showNotification = (
   type: 'info' | 'success' | 'warning' | 'error' = 'info',
   duration?: number
 ) => {
-  if (services?.notification) {
-    services.notification.show({
+  if (notification) {
+    notification.show({
       title,
       message,
       type,
@@ -34,6 +37,7 @@ const showNotification = (
     });
     state.count++;
     updateCounter();
+    logger?.info(`Notification shown: ${title} - ${message}`);
   }
 };
 
@@ -140,8 +144,9 @@ const handlers = {
   },
   
   clearAll: () => {
-    if (services?.notification?.clear) {
-      services.notification.clear();
+    if (notification) {
+      notification.dismissAll();
+      logger?.info('All notifications cleared');
     }
   },
   
@@ -331,12 +336,12 @@ const module: MFEModule = {
   metadata: {
     name: 'mfe-notification-vanilla',
     version: '1.0.0',
-    requiredServices: ['notification'],
-    capabilities: ['notification-demo']
+    requiredServices: ['logger', 'notification']
   },
 
-  mount: async (element: HTMLElement, container: MFEServiceContainer) => {
-    services = container.getAllServices();
+  mount: async (element: HTMLElement, serviceContainer: ServiceContainer) => {
+    logger = serviceContainer.require('logger');
+    notification = serviceContainer.require('notification');
     rootElement = element;
     
     // Reset state
@@ -348,23 +353,22 @@ const module: MFEModule = {
     // Attach event listeners
     attachEventListeners();
     
-    if (services.logger) {
-      services.logger.info('[mfe-notification-vanilla] Mounted successfully');
-    }
+    logger.info('[mfe-notification-vanilla] Mounted successfully');
   },
   
-  unmount: async (container: MFEServiceContainer) => {
+  unmount: async (serviceContainer: ServiceContainer) => {
     // Cleanup event listeners
     cleanupEventListeners();
     
     // Clear references
-    services = null;
+    notification = null;
     rootElement = null;
     
-    const unmountServices = container.getAllServices();
-    if (unmountServices.logger) {
-      unmountServices.logger.info('[mfe-notification-vanilla] Unmounted successfully');
+    const unmountLogger = serviceContainer.get('logger');
+    if (unmountLogger) {
+      unmountLogger.info('[mfe-notification-vanilla] Unmounted successfully');
     }
+    logger = null;
   }
 };
 

@@ -1,11 +1,11 @@
-import { MFEServices } from '../types';
+import type { ServiceContainer } from '@mfe-toolkit/core';
 
 interface ErrorReporterConfig {
   logToConsole?: boolean;
   sendToService?: boolean;
 }
 
-export function getErrorReporter(config: ErrorReporterConfig, services: MFEServices) {
+export function getErrorReporter(config: ErrorReporterConfig, serviceContainer: ServiceContainer) {
   return {
     reportError: (
       mfeName: string,
@@ -27,7 +27,10 @@ export function getErrorReporter(config: ErrorReporterConfig, services: MFEServi
       }
 
       // Log using the logger service
-      services.logger.error(`MFE Error in ${mfeName}: ${error.message}`, errorInfo);
+      const logger = serviceContainer.get('logger');
+      if (logger) {
+        logger.error(`MFE Error in ${mfeName}: ${error.message}`, errorInfo);
+      }
 
       // You could also send to a remote error tracking service here
       if (config.sendToService) {

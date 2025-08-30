@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MFEManifest, MFEServices } from '@mfe-toolkit/core';
+import type { MFEManifest, ServiceContainer } from '@mfe-toolkit/core';
 import { MFELoader } from '@mfe-toolkit/react';
 import { compatibilityChecker } from '@/services/compatibility-checker';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 
 interface CompatibleMFELoaderProps {
   manifest: MFEManifest;
-  services: MFEServices;
+  services: ServiceContainer;
   fallback?: React.ReactNode;
   onError?: (error: Error) => void;
   forceLoad?: boolean; // Allow loading even if incompatible (for development)
@@ -84,7 +84,7 @@ export const CompatibleMFELoader: React.FC<CompatibleMFELoaderProps> = ({
       <MFELoader
         name={manifest.name}
         url={manifest.url}
-        services={services}
+        serviceContainer={services}
         fallback={fallback}
         onError={onError}
         isolate={true}

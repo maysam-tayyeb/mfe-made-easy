@@ -30,11 +30,99 @@ function runCommand(command: string, args: string[], cwd: string): Promise<void>
   });
 }
 
+// Helper function to find registry path
+function findRegistryPath(startPath: string = process.cwd()): string | null {
+  let currentPath = path.resolve(startPath);
+  
+  while (currentPath !== path.dirname(currentPath)) {
+    // Check common generic locations for registry files
+    const possiblePaths = [
+      path.join(currentPath, 'mfe-registry.json'),
+      path.join(currentPath, 'public', 'mfe-registry.json'),
+      path.join(currentPath, 'src', 'mfe-registry.json'),
+      path.join(currentPath, 'config', 'mfe-registry.json'),
+    ];
+    
+    // Also check in any 'apps' subdirectories
+    const appsDir = path.join(currentPath, 'apps');
+    if (fs.existsSync(appsDir) && fs.statSync(appsDir).isDirectory()) {
+      const appDirs = fs.readdirSync(appsDir).filter(dir => 
+        fs.statSync(path.join(appsDir, dir)).isDirectory()
+      );
+      
+      for (const appDir of appDirs) {
+        possiblePaths.push(
+          path.join(appsDir, appDir, 'public', 'mfe-registry.json'),
+          path.join(appsDir, appDir, 'mfe-registry.json')
+        );
+      }
+    }
+    
+    for (const registryPath of possiblePaths) {
+      if (fs.existsSync(registryPath)) {
+        return registryPath;
+      }
+    }
+    
+    currentPath = path.dirname(currentPath);
+  }
+  
+  return null;
+}
+
+// Helper function to add MFE to registry
+async function addToRegistry(mfePath: string, registryPath: string): Promise<boolean> {
+  try {
+    // Read the manifest
+    const manifestPath = path.join(mfePath, 'manifest.json');
+    if (!fs.existsSync(manifestPath)) {
+      console.log(chalk.yellow('⚠️  No manifest.json found, skipping registry update'));
+      return false;
+    }
+    
+    const manifest = await fs.readJson(manifestPath);
+    
+    // Read the registry
+    const registryData = await fs.readJson(registryPath);
+    const registry = Array.isArray(registryData) ? registryData : registryData.mfes;
+    
+    if (!Array.isArray(registry)) {
+      console.log(chalk.yellow('⚠️  Invalid registry format, skipping update'));
+      return false;
+    }
+    
+    // Check if MFE already exists
+    const existingIndex = registry.findIndex((mfe: any) => mfe.name === manifest.name);
+    if (existingIndex !== -1) {
+      console.log(chalk.yellow(`⚠️  MFE "${manifest.name}" already exists in registry, skipping`));
+      return false;
+    }
+    
+    // Add the new MFE
+    registry.push(manifest);
+    
+    // Update the registry file
+    if (Array.isArray(registryData)) {
+      await fs.writeJson(registryPath, registry, { spaces: 2 });
+    } else {
+      registryData.mfes = registry;
+      registryData.lastUpdated = new Date().toISOString();
+      await fs.writeJson(registryPath, registryData, { spaces: 2 });
+    }
+    
+    return true;
+  } catch (error) {
+    console.error(chalk.red('❌ Failed to update registry:'), error);
+    return false;
+  }
+}
+
 export const createCommand = new Command('create')
   .description('Create a new microfrontend')
   .argument('[name]', 'Name of the microfrontend')
   .option('-t, --template <template>', 'Template to use (react, react17, react18, react19, vue, solidjs, vanilla-ts)')
   .option('-y, --yes', 'Skip prompts and use defaults')
+  .option('--no-registry', 'Skip automatic registry update')
   .action(async (name, options) => {
     try {
       // Prompt for missing information
@@ -220,6 +308,21 @@ export const createCommand = new Command('create')
       } catch (error) {
         console.error(chalk.red('❌ Failed to build MFE:'), error);
         console.log(chalk.yellow('Please run "pnpm build" in the MFE directory'));
+      }
+      
+      // Try to add to registry if not disabled
+      if (options.registry !== false) {
+        const registryPath = findRegistryPath(projectPath);
+        if (registryPath) {
+          console.log(chalk.cyan('\n📝 Updating MFE registry...'));
+          const added = await addToRegistry(mfePath, registryPath);
+          if (added) {
+            console.log(chalk.green(`✅ Added "${config.name}" to registry at ${path.relative(projectPath, registryPath)}`));
+          }
+        } else {
+          console.log(chalk.gray('\nℹ️  No MFE registry found. You can add this MFE manually with:'));
+          console.log(chalk.cyan(`   mfe-toolkit registry add ${config.name}`));
+        }
       }
       
       console.log(

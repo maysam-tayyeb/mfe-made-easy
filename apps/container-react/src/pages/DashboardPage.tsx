@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
-  const { openModal, addNotification } = useUI();
+  const { addNotification } = useUI();
   const { registry, isLoading, error, reload } = useRegistry();
 
   const allMfes = useMemo(() => registry.getAll(), [registry]);

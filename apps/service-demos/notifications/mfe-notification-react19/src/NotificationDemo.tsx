@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import type { MFEServices } from '@mfe-toolkit/core';
+import type { Logger } from '@mfe-toolkit/core';
+import type { NotificationService, NotificationType } from '@mfe-toolkit/service-notification/types';
 
-type NotificationType = 'success' | 'error' | 'warning' | 'info';
+interface NotificationDemoProps {
+  notification: NotificationService;
+  logger: Logger;
+}
 
-export const NotificationDemo: React.FC<{ services: MFEServices }> = ({ services }) => {
+export const NotificationDemo: React.FC<NotificationDemoProps> = ({ notification, logger }) => {
   const [notificationCount, setNotificationCount] = useState(0);
   const [customTitle, setCustomTitle] = useState('Custom Notification');
   const [customMessage, setCustomMessage] = useState('This is a custom notification message');
@@ -15,88 +19,52 @@ export const NotificationDemo: React.FC<{ services: MFEServices }> = ({ services
     type: NotificationType = 'info',
     duration?: number
   ) => {
-    if (services.notification) {
-      services.notification.show({
-        title,
-        message,
-        type,
-        duration
-      });
-      setNotificationCount(prev => prev + 1);
-    }
+    notification.show({
+      title,
+      message,
+      type,
+      duration,
+    });
+    setNotificationCount((prev) => prev + 1);
+    logger.info(`Notification shown: ${title} - ${message}`);
   };
 
   const showSuccess = () => {
-    showNotification(
-      'Success!',
-      'Operation completed successfully from React 19 MFE',
-      'success'
-    );
+    showNotification('Success!', 'Operation completed successfully from React 19 MFE', 'success');
   };
 
   const showError = () => {
-    showNotification(
-      'Error Occurred',
-      'Something went wrong in the React 19 MFE',
-      'error'
-    );
+    showNotification('Error Occurred', 'Something went wrong in the React 19 MFE', 'error');
   };
 
   const showWarning = () => {
-    showNotification(
-      'Warning',
-      'Please review this warning from React 19',
-      'warning'
-    );
+    showNotification('Warning', 'Please review this warning from React 19', 'warning');
   };
 
   const showInfo = () => {
-    showNotification(
-      'Information',
-      'This is an informational message from React 19',
-      'info'
-    );
+    showNotification('Information', 'This is an informational message from React 19', 'info');
   };
 
   const showCustom = () => {
-    showNotification(
-      customTitle,
-      customMessage,
-      customType
-    );
+    showNotification(customTitle, customMessage, customType);
   };
 
   const showShortDuration = () => {
-    showNotification(
-      'Quick Message',
-      'This will disappear in 1 second',
-      'info',
-      1000
-    );
+    showNotification('Quick Message', 'This will disappear in 1 second', 'info', 1000);
   };
 
   const showNormalDuration = () => {
-    showNotification(
-      'Normal Duration',
-      'This will disappear in 3 seconds',
-      'info',
-      3000
-    );
+    showNotification('Normal Duration', 'This will disappear in 3 seconds', 'info', 3000);
   };
 
   const showLongDuration = () => {
-    showNotification(
-      'Long Duration',
-      'This will stay for 10 seconds',
-      'info',
-      10000
-    );
+    showNotification('Long Duration', 'This will stay for 10 seconds', 'info', 10000);
   };
 
   const showPersistent = () => {
     showNotification(
       'Persistent Notification',
-      'This won\'t auto-dismiss (close manually)',
+      "This won't auto-dismiss (close manually)",
       'warning',
       0
     );
@@ -108,7 +76,7 @@ export const NotificationDemo: React.FC<{ services: MFEServices }> = ({ services
       { title: 'Second', message: 'React 19 notification 2', type: 'success' as const },
       { title: 'Third', message: 'React 19 notification 3', type: 'warning' as const },
       { title: 'Fourth', message: 'React 19 notification 4', type: 'error' as const },
-      { title: 'Fifth', message: 'React 19 notification 5', type: 'info' as const }
+      { title: 'Fifth', message: 'React 19 notification 5', type: 'info' as const },
     ];
 
     messages.forEach((msg, index) => {
@@ -119,9 +87,8 @@ export const NotificationDemo: React.FC<{ services: MFEServices }> = ({ services
   };
 
   const clearAll = () => {
-    if (services.notification?.clear) {
-      services.notification.clear();
-    }
+    notification.dismissAll();
+    logger.info('All notifications cleared');
   };
 
   return (
@@ -129,8 +96,8 @@ export const NotificationDemo: React.FC<{ services: MFEServices }> = ({ services
       <div className="ds-mb-6">
         <h2 className="ds-text-2xl ds-font-bold ds-mb-2">React 19 Notification Demo</h2>
         <p className="ds-text-gray-600">
-          Framework: <span className="ds-font-medium">React 19.0.0</span> | 
-          Pattern: <span className="ds-font-medium">MFEModule</span>
+          Framework: <span className="ds-font-medium">React 19.0.0</span> | Pattern:{' '}
+          <span className="ds-font-medium">MFEModule</span>
         </p>
       </div>
 
@@ -180,7 +147,7 @@ export const NotificationDemo: React.FC<{ services: MFEServices }> = ({ services
             </div>
             <div>
               <label className="ds-block ds-text-sm ds-font-medium ds-mb-1">Type</label>
-              <select 
+              <select
                 value={customType}
                 onChange={(e) => setCustomType(e.target.value as NotificationType)}
                 className="ds-select"

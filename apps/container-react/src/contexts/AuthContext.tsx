@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { AuthSession } from '@mfe-toolkit/core';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import { useAuthService } from './ServiceContext';
+import type { AuthSession } from '@mfe-toolkit/service-authentication/types';
 
 interface AuthContextType {
   session: AuthSession | null;
@@ -22,16 +23,46 @@ const defaultSession: AuthSession = {
 };
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [session, setSessionState] = useState<AuthSession | null>(defaultSession);
-  const [loading, setLoading] = useState(false);
+  const authService = useAuthService();
+  const [session, setSessionState] = useState<AuthSession | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Initialize session from auth service
+  useEffect(() => {
+    if (authService) {
+      const currentSession = authService.getSession();
+      setSessionState(currentSession || defaultSession);
+      
+      // Subscribe to auth changes if available
+      const unsubscribe = authService.subscribe?.((newSession) => {
+        setSessionState(newSession);
+      });
+      
+      setLoading(false);
+      return unsubscribe;
+    } else {
+      // Fallback to default session if no auth service
+      setSessionState(defaultSession);
+      setLoading(false);
+    }
+  }, [authService]);
 
   const setSession = useCallback((newSession: AuthSession | null) => {
     setSessionState(newSession);
-  }, []);
+    // Update auth service if available
+    if (authService && newSession) {
+      // In a real app, this would update the auth service
+      // For now, we just update local state
+    }
+  }, [authService]);
 
   const logout = useCallback(() => {
-    setSessionState(null);
-  }, []);
+    if (authService?.logout) {
+      authService.logout();
+    } else {
+      setSessionState(null);
+    }
+  }, [authService]);
 
   const value: AuthContextType = {
     session,

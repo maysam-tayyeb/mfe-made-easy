@@ -1,4 +1,4 @@
-import { Theme, ThemeService } from '@mfe-toolkit/core';
+import type { Theme, ThemeService } from '@mfe-toolkit/service-theme';
 
 type ThemeChangeListener = (theme: Theme) => void;
 

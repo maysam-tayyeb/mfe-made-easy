@@ -9,7 +9,6 @@ export {
   MFEServicesProvider as MFEProvider, // alias for backward compatibility
   useMFEServices,
   useMFEService,
-  withMFEServices,
 } from './services/dependency-injection';
 
 // State Management

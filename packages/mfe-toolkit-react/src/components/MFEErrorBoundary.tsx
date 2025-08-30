@@ -1,11 +1,11 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { MFEServices } from '../types';
+import type { ServiceContainer } from '@mfe-toolkit/core';
 import { getErrorReporter } from '../services/error-reporter';
 
 interface Props {
   children: ReactNode;
   mfeName: string;
-  services?: MFEServices;
+  services?: ServiceContainer;
   fallback?: (error: Error, errorInfo: ErrorInfo, retry: () => void) => ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
@@ -49,8 +49,9 @@ export class MFEErrorBoundary extends Component<Props, State> {
     }
 
     // Log to MFE logger service if available
-    if (services?.logger) {
-      services.logger.error(`MFE ${mfeName} crashed: ${error.message}`, {
+    const logger = services?.get('logger');
+    if (logger) {
+      logger.error(`MFE ${mfeName} crashed: ${error.message}`, {
         error,
         errorInfo,
         componentStack: errorInfo.componentStack,
@@ -70,8 +71,9 @@ export class MFEErrorBoundary extends Component<Props, State> {
     const { retryCount } = this.state;
     const { services, mfeName } = this.props;
 
-    if (services?.logger) {
-      services.logger.info(`Retrying MFE ${mfeName} (attempt ${retryCount + 1})`);
+    const logger = services?.get('logger');
+    if (logger) {
+      logger.info(`Retrying MFE ${mfeName} (attempt ${retryCount + 1})`);
     }
 
     this.setState({

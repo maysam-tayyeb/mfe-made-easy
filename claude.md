@@ -2,6 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Recent Achievements (January 2025)
+
+- ✅ **Service Registry Architecture** - Complete audit and improvements
+- ✅ **CLI Template System** - Refactored to separated files with template engine
+- ✅ **Registry Management** - Added CLI commands for add/remove/update/list operations
+- ✅ **CLI Simplification** - Removed redundant commands, made framework-agnostic
+- ✅ **Auto-Registry Updates** - Create command now adds MFEs to registry automatically
+- ✅ **CLI Test Suite** - Added comprehensive tests (36 tests passing)
+- ✅ **@mfe-toolkit/core Tests** - 75 tests passing with good coverage
+- ✅ **Standalone Development** - @mfe-toolkit/dev package for independent MFE development
+- ✅ **Build System** - @mfe-toolkit/build with automatic dependency detection
+
 ## Essential Commands
 
 ### Development

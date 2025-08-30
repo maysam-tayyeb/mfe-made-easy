@@ -42,8 +42,17 @@ const MFECard: React.FC<{
 };
 
 export const NotificationsPage: React.FC = () => {
-  const { addNotification, clearNotifications } = useUI();
+  const { addNotification, notifications, removeNotification } = useUI();
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Helper function to clear all notifications
+  const clearNotifications = () => {
+    notifications.forEach(notification => {
+      if (notification.id) {
+        removeNotification(notification.id);
+      }
+    });
+  };
   
   // Tab state - get initial tab from URL or default to 'container'
   const initialTab = searchParams.get('tab') || 'container';

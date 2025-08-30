@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@mfe-toolkit/core": "workspace:*",
+    "@mfe-toolkit/service-notification": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { MFEServices } from '@mfe-toolkit/core';
+import type { ServiceContainer } from '@mfe-toolkit/core';
 
 type Stock = {
   symbol: string;
@@ -14,10 +14,12 @@ type Stock = {
 };
 
 type MarketWatchProps = {
-  services: MFEServices;
+  serviceContainer: ServiceContainer;
 };
 
-export const MarketWatch: React.FC<MarketWatchProps> = ({ services }) => {
+export const MarketWatch: React.FC<MarketWatchProps> = ({ serviceContainer }) => {
+  const eventBus = serviceContainer.require('eventBus');
+  const logger = serviceContainer.require('logger');
   const [stocks, setStocks] = useState<Stock[]>([
     { symbol: 'AAPL', name: 'Apple Inc.', price: 178.35, change: 2.45, changePercent: 1.39, volume: '52.3M', high: 179.20, low: 176.80, marketCap: '2.8T' },
     { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 138.92, change: -0.84, changePercent: -0.60, volume: '28.1M', high: 140.10, low: 138.50, marketCap: '1.7T' },
@@ -57,7 +59,7 @@ export const MarketWatch: React.FC<MarketWatchProps> = ({ services }) => {
         const randomStock = stocks[Math.floor(Math.random() * stocks.length)];
         const eventType = Math.random() > 0.5 ? 'market:price-alert' : 'market:volume-spike';
         
-        services.eventBus.emit(eventType, {
+        eventBus.emit(eventType, {
           symbol: randomStock.symbol,
           name: randomStock.name,
           price: randomStock.price,
@@ -68,14 +70,15 @@ export const MarketWatch: React.FC<MarketWatchProps> = ({ services }) => {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [services, stocks]);
+  }, [eventBus, stocks]);
 
   useEffect(() => {
     // Listen for trade execution events
-    const unsubscribe = services.eventBus.on('trade:executed', (payload: any) => {
+    const unsubscribe = eventBus.on('trade:executed', (payload: any) => {
       const { symbol, action, quantity, price } = payload.data || {};
       
-      services.notifications?.addNotification({
+      // Log trade execution instead of using notification service
+      logger.info('Trade executed:', {
         type: 'success',
         title: 'Trade Executed',
         message: `${action} ${quantity} shares of ${symbol} at $${price}`
@@ -96,14 +99,14 @@ export const MarketWatch: React.FC<MarketWatchProps> = ({ services }) => {
     });
 
     return () => unsubscribe();
-  }, [services]);
+  }, [eventBus, logger]);
 
   const handleStockClick = (symbol: string) => {
     setSelectedStock(symbol);
     
     const stock = stocks.find(s => s.symbol === symbol);
     if (stock) {
-      services.eventBus.emit('market:stock-selected', {
+      eventBus.emit('market:stock-selected', {
         symbol: stock.symbol,
         name: stock.name,
         price: stock.price,
@@ -119,7 +122,7 @@ export const MarketWatch: React.FC<MarketWatchProps> = ({ services }) => {
         ? prev.filter(s => s !== symbol)
         : [...prev, symbol];
       
-      services.eventBus.emit('market:watchlist-updated', {
+      eventBus.emit('market:watchlist-updated', {
         action: prev.includes(symbol) ? 'removed' : 'added',
         symbol,
         watchlist: updated

@@ -1,10 +1,10 @@
 import type { TemplateConfig, TemplateGenerator, ReactVersion } from './types';
-import { React17Template } from './react/react17';
-import { React18Template } from './react/react18';
-import { React19Template } from './react/react19';
-import { Vue3Template } from './vue/vue3';
-import { SolidJSTemplate } from './solid/solidjs';
-import { VanillaTypeScriptTemplate } from './vanilla/vanilla-ts';
+import { React17Template } from './react17';
+import { React18Template } from './react18';
+import { React19Template } from './react19';
+import { Vue3Template } from './vue3';
+import { SolidJSTemplate } from './solidjs';
+import { VanillaTypeScriptTemplate } from './vanilla-ts';
 
 export function createTemplateGenerator(config: TemplateConfig): TemplateGenerator {
   const { framework } = config;

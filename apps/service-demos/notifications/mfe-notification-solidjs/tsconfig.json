@@ -8,7 +8,8 @@
       "DOM.Iterable"
     ],
     "jsx": "preserve",
-    "moduleResolution": "node",
+    "jsxImportSource": "solid-js",
+    "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -16,7 +17,7 @@
     "declaration": false,
     "noEmit": true,
     "resolveJsonModule": true,
-    "types": []
+    "types": ["solid-js"]
   },
   "include": [
     "src/**/*"

@@ -8,7 +8,7 @@ import type {
   EventSchema,
 } from '../types/events';
 import { createEvent as createEventUtil } from '../types/events';
-import type { EventBus, EventPayload } from '../types';
+import type { EventBus, EventPayload } from './registry/types';
 
 /**
  * Handler type for typed events

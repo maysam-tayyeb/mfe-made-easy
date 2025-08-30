@@ -2,7 +2,7 @@
   "$schema": "https://mfe-made-easy.com/schemas/mfe-registry.schema.json",
   "version": "2.0.0",
   "environment": "development",
-  "lastUpdated": "2025-01-14T14:30:00.000Z",
+  "lastUpdated": "2025-08-30T07:45:29.574Z",
   "mfes": [
     {
       "$schema": "https://mfe-made-easy.com/schemas/mfe-manifest-v2.schema.json",
@@ -32,23 +32,49 @@
         }
       },
       "capabilities": {
-        "emits": ["market:price-update", "market:stock-selected", "market:data-refreshed"],
-        "listens": ["trading:order-placed", "trading:order-filled", "analytics:trend-identified"],
-        "features": ["real-time-prices", "market-data-display", "stock-monitoring", "price-alerts"]
+        "emits": [
+          "market:price-update",
+          "market:stock-selected",
+          "market:data-refreshed"
+        ],
+        "listens": [
+          "trading:order-placed",
+          "trading:order-filled",
+          "analytics:trend-identified"
+        ],
+        "features": [
+          "real-time-prices",
+          "market-data-display",
+          "stock-monitoring",
+          "price-alerts"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "eventBus", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "eventBus",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "Market Watch",
         "description": "Real-time market data viewer built with React",
         "icon": "📈",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["market-data", "trading", "react", "real-time"]
+        "tags": [
+          "market-data",
+          "trading",
+          "react",
+          "real-time"
+        ]
       },
       "config": {
         "loading": {
@@ -96,23 +122,50 @@
         }
       },
       "capabilities": {
-        "emits": ["trading:order-placed", "trading:order-cancelled", "trading:order-modified", "trading:order-filled"],
-        "listens": ["market:price-update", "market:stock-selected", "analytics:portfolio-analyzed"],
-        "features": ["order-placement", "portfolio-management", "real-time-trading", "order-tracking"]
+        "emits": [
+          "trading:order-placed",
+          "trading:order-cancelled",
+          "trading:order-modified",
+          "trading:order-filled"
+        ],
+        "listens": [
+          "market:price-update",
+          "market:stock-selected",
+          "analytics:portfolio-analyzed"
+        ],
+        "features": [
+          "order-placement",
+          "portfolio-management",
+          "real-time-trading",
+          "order-tracking"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "eventBus", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "eventBus",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "Trading Terminal",
         "description": "Trading interface for order placement built with Vue 3",
         "icon": "💹",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["trading", "orders", "vue3", "real-time"]
+        "tags": [
+          "trading",
+          "orders",
+          "vue3",
+          "real-time"
+        ]
       },
       "config": {
         "loading": {
@@ -155,23 +208,50 @@
         }
       },
       "capabilities": {
-        "emits": ["analytics:portfolio-analyzed", "analytics:trend-identified", "analytics:report-generated"],
-        "listens": ["market:trade-executed", "market:price-update", "trading:order-placed", "trading:order-filled"],
-        "features": ["real-time-analytics", "portfolio-analysis", "trend-detection", "performance-metrics"]
+        "emits": [
+          "analytics:portfolio-analyzed",
+          "analytics:trend-identified",
+          "analytics:report-generated"
+        ],
+        "listens": [
+          "market:trade-executed",
+          "market:price-update",
+          "trading:order-placed",
+          "trading:order-filled"
+        ],
+        "features": [
+          "real-time-analytics",
+          "portfolio-analysis",
+          "trend-detection",
+          "performance-metrics"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "eventBus", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "eventBus",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "Analytics Engine",
         "description": "Real-time trading analytics processor built with Vanilla TypeScript",
         "icon": "📊",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["analytics", "trading", "vanilla-typescript", "real-time"]
+        "tags": [
+          "analytics",
+          "trading",
+          "vanilla-typescript",
+          "real-time"
+        ]
       },
       "config": {
         "loading": {
@@ -219,23 +299,49 @@
         }
       },
       "capabilities": {
-        "emits": ["playground:test", "playground:event-sent", "playground:listener-added", "playground:listener-removed"],
-        "listens": ["*"],
-        "features": ["event-testing", "event-monitoring", "json-validation", "wildcard-subscriptions"]
+        "emits": [
+          "playground:test",
+          "playground:event-sent",
+          "playground:listener-added",
+          "playground:listener-removed"
+        ],
+        "listens": [
+          "*"
+        ],
+        "features": [
+          "event-testing",
+          "event-monitoring",
+          "json-validation",
+          "wildcard-subscriptions"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "eventBus", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "eventBus",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "Event Playground",
         "description": "Interactive event testing and monitoring tool built with Solid.js",
         "icon": "🎮",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["event-bus", "testing", "solid-js", "monitoring", "interactive"]
+        "tags": [
+          "event-bus",
+          "testing",
+          "solid-js",
+          "monitoring",
+          "interactive"
+        ]
       },
       "config": {
         "loading": {
@@ -284,22 +390,37 @@
         }
       },
       "capabilities": {
-        "emits": ["notification:test-triggered"],
+        "emits": [
+          "notification:test-triggered"
+        ],
         "listens": [],
-        "features": ["notification-testing", "custom-notifications"]
+        "features": [
+          "notification-testing",
+          "custom-notifications"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "notification", "optional": false }
+          {
+            "name": "notification",
+            "optional": false
+          }
         ]
       },
       "metadata": {
         "displayName": "React 19 Notification Demo",
         "description": "Notification service demonstration MFE built with React 19",
         "icon": "🔔",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["notification", "demo", "react19", "service"]
+        "tags": [
+          "notification",
+          "demo",
+          "react19",
+          "service"
+        ]
       },
       "config": {
         "loading": {
@@ -348,23 +469,42 @@
         }
       },
       "capabilities": {
-        "emits": ["notification:test"],
+        "emits": [
+          "notification:test"
+        ],
         "listens": [],
-        "features": ["notification-testing", "react18-hooks", "custom-notifications"]
+        "features": [
+          "notification-testing",
+          "react18-hooks",
+          "custom-notifications"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "notification", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "notification",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "React 18 Notification Demo",
         "description": "Notification service demonstration MFE built with React 18",
         "icon": "⚛️",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["notification", "demo", "react18", "service"]
+        "tags": [
+          "notification",
+          "demo",
+          "react18",
+          "service"
+        ]
       },
       "config": {
         "loading": {
@@ -413,23 +553,44 @@
         }
       },
       "capabilities": {
-        "emits": ["notification:test"],
+        "emits": [
+          "notification:test"
+        ],
         "listens": [],
-        "features": ["notification-testing", "react17-hooks", "custom-notifications", "legacy-support"]
+        "features": [
+          "notification-testing",
+          "react17-hooks",
+          "custom-notifications",
+          "legacy-support"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "notification", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "notification",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "React 17 Notification Demo",
         "description": "Notification service demonstration MFE built with React 17",
         "icon": "🔗",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["notification", "demo", "react17", "service", "legacy"]
+        "tags": [
+          "notification",
+          "demo",
+          "react17",
+          "service",
+          "legacy"
+        ]
       },
       "config": {
         "loading": {
@@ -477,23 +638,42 @@
         }
       },
       "capabilities": {
-        "emits": ["notification:test"],
+        "emits": [
+          "notification:test"
+        ],
         "listens": [],
-        "features": ["notification-testing", "vue3-composition", "custom-notifications"]
+        "features": [
+          "notification-testing",
+          "vue3-composition",
+          "custom-notifications"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "notification", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "notification",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "Vue 3 Notification Demo",
         "description": "Notification service demonstration MFE built with Vue 3",
         "icon": "🔔",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["notification", "demo", "vue3", "service"]
+        "tags": [
+          "notification",
+          "demo",
+          "vue3",
+          "service"
+        ]
       },
       "config": {
         "loading": {
@@ -541,23 +721,42 @@
         }
       },
       "capabilities": {
-        "emits": ["notification:test"],
+        "emits": [
+          "notification:test"
+        ],
         "listens": [],
-        "features": ["notification-testing", "solidjs-signals", "custom-notifications"]
+        "features": [
+          "notification-testing",
+          "solidjs-signals",
+          "custom-notifications"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "notification", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "notification",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "Solid.js Notification Demo",
         "description": "Notification service demonstration MFE built with Solid.js",
         "icon": "🔷",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["notification", "demo", "solidjs", "service"]
+        "tags": [
+          "notification",
+          "demo",
+          "solidjs",
+          "service"
+        ]
       },
       "config": {
         "loading": {
@@ -600,23 +799,44 @@
         }
       },
       "capabilities": {
-        "emits": ["notification:test"],
+        "emits": [
+          "notification:test"
+        ],
         "listens": [],
-        "features": ["notification-testing", "vanilla-typescript", "custom-notifications", "event-delegation"]
+        "features": [
+          "notification-testing",
+          "vanilla-typescript",
+          "custom-notifications",
+          "event-delegation"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "notification", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "notification",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "Vanilla TypeScript Notification Demo",
         "description": "Notification service demonstration MFE built with Vanilla TypeScript",
         "icon": "📦",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["notification", "demo", "vanilla", "typescript", "service"]
+        "tags": [
+          "notification",
+          "demo",
+          "vanilla",
+          "typescript",
+          "service"
+        ]
       },
       "config": {
         "loading": {
@@ -665,23 +885,43 @@
         }
       },
       "capabilities": {
-        "emits": ["modal:test-opened", "modal:test-closed"],
+        "emits": [
+          "modal:test-opened",
+          "modal:test-closed"
+        ],
         "listens": [],
-        "features": ["modal-testing", "custom-modals", "modal-stacking"]
+        "features": [
+          "modal-testing",
+          "custom-modals",
+          "modal-stacking"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "modal", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "modal",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "React 19 Modal Demo",
         "description": "Modal service demonstration MFE built with React 19",
         "icon": "🪟",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["modal", "demo", "react19", "service"]
+        "tags": [
+          "modal",
+          "demo",
+          "react19",
+          "service"
+        ]
       },
       "config": {
         "loading": {
@@ -730,23 +970,44 @@
         }
       },
       "capabilities": {
-        "emits": ["modal:test-opened", "modal:test-closed"],
+        "emits": [
+          "modal:test-opened",
+          "modal:test-closed"
+        ],
         "listens": [],
-        "features": ["modal-testing", "custom-modals", "modal-stacking", "react18-hooks"]
+        "features": [
+          "modal-testing",
+          "custom-modals",
+          "modal-stacking",
+          "react18-hooks"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "modal", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "modal",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "React 18 Modal Demo",
         "description": "Modal service demonstration MFE built with React 18",
         "icon": "⚛️",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["modal", "demo", "react18", "service"]
+        "tags": [
+          "modal",
+          "demo",
+          "react18",
+          "service"
+        ]
       },
       "config": {
         "loading": {
@@ -795,23 +1056,45 @@
         }
       },
       "capabilities": {
-        "emits": ["modal:test-opened", "modal:test-closed"],
+        "emits": [
+          "modal:test-opened",
+          "modal:test-closed"
+        ],
         "listens": [],
-        "features": ["modal-testing", "custom-modals", "modal-stacking", "legacy-support"]
+        "features": [
+          "modal-testing",
+          "custom-modals",
+          "modal-stacking",
+          "legacy-support"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "modal", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "modal",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "React 17 Modal Demo",
         "description": "Modal service demonstration MFE built with React 17",
         "icon": "🔗",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["modal", "demo", "react17", "service", "legacy"]
+        "tags": [
+          "modal",
+          "demo",
+          "react17",
+          "service",
+          "legacy"
+        ]
       },
       "config": {
         "loading": {
@@ -859,23 +1142,44 @@
         }
       },
       "capabilities": {
-        "emits": ["modal:test-opened", "modal:test-closed"],
+        "emits": [
+          "modal:test-opened",
+          "modal:test-closed"
+        ],
         "listens": [],
-        "features": ["modal-testing", "custom-modals", "modal-stacking", "vue3-composition"]
+        "features": [
+          "modal-testing",
+          "custom-modals",
+          "modal-stacking",
+          "vue3-composition"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "modal", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "modal",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "Vue 3 Modal Demo",
         "description": "Modal service demonstration MFE built with Vue 3",
         "icon": "💚",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["modal", "demo", "vue3", "service"]
+        "tags": [
+          "modal",
+          "demo",
+          "vue3",
+          "service"
+        ]
       },
       "config": {
         "loading": {
@@ -923,23 +1227,44 @@
         }
       },
       "capabilities": {
-        "emits": ["modal:test-opened", "modal:test-closed"],
+        "emits": [
+          "modal:test-opened",
+          "modal:test-closed"
+        ],
         "listens": [],
-        "features": ["modal-testing", "custom-modals", "modal-stacking", "solidjs-signals"]
+        "features": [
+          "modal-testing",
+          "custom-modals",
+          "modal-stacking",
+          "solidjs-signals"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "modal", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "modal",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "Solid.js Modal Demo",
         "description": "Modal service demonstration MFE built with Solid.js",
         "icon": "🔷",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["modal", "demo", "solidjs", "service"]
+        "tags": [
+          "modal",
+          "demo",
+          "solidjs",
+          "service"
+        ]
       },
       "config": {
         "loading": {
@@ -982,23 +1307,45 @@
         }
       },
       "capabilities": {
-        "emits": ["modal:test-opened", "modal:test-closed"],
+        "emits": [
+          "modal:test-opened",
+          "modal:test-closed"
+        ],
         "listens": [],
-        "features": ["modal-testing", "custom-modals", "modal-stacking", "vanilla-typescript"]
+        "features": [
+          "modal-testing",
+          "custom-modals",
+          "modal-stacking",
+          "vanilla-typescript"
+        ]
       },
       "requirements": {
         "services": [
-          { "name": "modal", "optional": false },
-          { "name": "logger", "optional": true }
+          {
+            "name": "modal",
+            "optional": false
+          },
+          {
+            "name": "logger",
+            "optional": true
+          }
         ]
       },
       "metadata": {
         "displayName": "Vanilla TypeScript Modal Demo",
         "description": "Modal service demonstration MFE built with Vanilla TypeScript",
         "icon": "📦",
-        "author": { "name": "MFE Toolkit Team" },
+        "author": {
+          "name": "MFE Toolkit Team"
+        },
         "category": "service-demos",
-        "tags": ["modal", "demo", "vanilla", "typescript", "service"]
+        "tags": [
+          "modal",
+          "demo",
+          "vanilla",
+          "typescript",
+          "service"
+        ]
       },
       "config": {
         "loading": {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Theme } from '@mfe-toolkit/core';
+// Theme type is now part of the theme service
 import { getThemeService } from '@/services/theme-service';
 import {
   Moon,
@@ -25,7 +25,7 @@ interface NavItem {
 
 export const Navigation: React.FC = () => {
   const location = useLocation();
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<string>('light');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const themeService = getThemeService();
 

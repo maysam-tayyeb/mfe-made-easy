@@ -8,12 +8,13 @@
     "build:watch": "node build.js --watch"
   },
   "dependencies": {
+    "@mfe-toolkit/core": "workspace:*",
+    "@mfe-toolkit/service-notification": "workspace:*",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
   "devDependencies": {
     "@mfe-toolkit/build": "workspace:*",
-    "@mfe-toolkit/core": "workspace:*",
     "esbuild": "^0.24.2",
     "@types/react": "^17.0.2",
     "@types/react-dom": "^17.0.2",

@@ -1,4 +1,4 @@
-import { MFEServices } from '../types';
+import type { ServiceContainer } from './registry/types';
 
 export interface ErrorReport {
   id: string;
@@ -37,8 +37,8 @@ export class ErrorReporter {
   private errorCounts = new Map<string, number>();
   private lastErrorTime = new Map<string, number>();
   private config: Required<ErrorReporterConfig>;
-  private services?: MFEServices;
-  constructor(config: ErrorReporterConfig = {}, services?: MFEServices) {
+  private services?: ServiceContainer;
+  constructor(config: ErrorReporterConfig = {}, services?: ServiceContainer) {
     this.config = {
       maxErrorsPerSession: 100,
       errorThrottleMs: 5000,
@@ -89,7 +89,7 @@ export class ErrorReporter {
         url: window.location.href,
         userAgent: navigator.userAgent,
         sessionId: this.getSessionId(),
-        userId: this.services?.auth.getSession()?.userId,
+        userId: this.getUserId(),
         ...context,
       },
       errorInfo,
@@ -110,8 +110,9 @@ export class ErrorReporter {
     }
 
     // Log to MFE logger if available
-    if (this.services?.logger) {
-      this.services.logger.error(`MFE Error in ${mfeName}: ${error.message}`, report);
+    const logger = this.services?.get('logger');
+    if (logger) {
+      logger.error(`MFE Error in ${mfeName}: ${error.message}`, report);
     }
 
     // Send to remote if enabled
@@ -123,11 +124,8 @@ export class ErrorReporter {
     this.config.onError(report);
 
     // Show notification for critical errors
-    if (report.severity === 'critical' && this.services?.notification) {
-      this.services.notification.error(
-        'Critical Error',
-        `${mfeName} encountered a critical error. Please refresh the page.`
-      );
+    if (report.severity === 'critical') {
+      this.showCriticalErrorNotification(mfeName);
     }
 
     return report;
@@ -158,6 +156,31 @@ export class ErrorReporter {
       sessionStorage.setItem('mfe-session-id', sessionId);
     }
     return sessionId;
+  }
+
+  private getUserId(): string | undefined {
+    // Try to get auth service if available (may not exist in core)
+    const auth = this.services?.get('auth' as any);
+    if (auth && typeof (auth as any).getSession === 'function') {
+      return (auth as any).getSession()?.userId;
+    }
+    return undefined;
+  }
+
+  private showCriticalErrorNotification(mfeName: string): void {
+    // Try to get notification service if available (may not exist in core)
+    const notification = this.services?.get('notification' as any);
+    if (notification && typeof (notification as any).error === 'function') {
+      (notification as any).error(
+        'Critical Error',
+        `${mfeName} encountered a critical error. Please refresh the page.`
+      );
+    } else {
+      // Fallback to console error if notification service not available
+      console.error(
+        `Critical Error: ${mfeName} encountered a critical error. Please refresh the page.`
+      );
+    }
   }
 
   private async sendToRemote(report: ErrorReport): Promise<void> {
@@ -230,7 +253,7 @@ let errorReporter: ErrorReporter | null = null;
 
 export function getErrorReporter(
   config?: ErrorReporterConfig,
-  services?: MFEServices
+  services?: ServiceContainer
 ): ErrorReporter {
   if (!errorReporter) {
     errorReporter = new ErrorReporter(config, services);

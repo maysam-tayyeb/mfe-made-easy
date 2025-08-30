@@ -193,10 +193,15 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import type { ServiceContainer } from '@mfe-toolkit/core';
 
 const props = defineProps<{
-  services: any;
+  serviceContainer: ServiceContainer;
 }>();
+
+const eventBus = props.serviceContainer.require('eventBus');
+const logger = props.serviceContainer.require('logger');
+const notification = props.serviceContainer.get('notification');
 
 type Order = {
   id: string;
@@ -284,7 +289,7 @@ const placeOrder = () => {
   orders.value = [order, ...orders.value].slice(0, 10);
 
   // Emit trade event
-  props.services.eventBus.emit('trade:placed', {
+  eventBus.emit('trade:placed', {
     orderId: order.id,
     symbol: order.symbol,
     action: order.action,
@@ -302,7 +307,7 @@ const placeOrder = () => {
       if (executedOrder.status === 'executed') {
         updatePositions(executedOrder);
         
-        props.services.eventBus.emit('trade:executed', {
+        eventBus.emit('trade:executed', {
           orderId: order.id,
           symbol: order.symbol,
           action: order.action,
@@ -311,13 +316,13 @@ const placeOrder = () => {
           total: order.quantity * order.price
         });
 
-        props.services.notifications?.addNotification({
+        notification?.addNotification({
           type: 'success',
           title: 'Order Executed',
           message: `${order.action} ${order.quantity} ${order.symbol} @ $${order.price.toFixed(2)}`
         });
       } else {
-        props.services.notifications?.addNotification({
+        notification?.addNotification({
           type: 'error',
           title: 'Order Rejected',
           message: `Failed to ${order.action} ${order.symbol}`
@@ -376,12 +381,12 @@ const closeAllPositions = () => {
   
   positions.value = [];
   
-  props.services.eventBus.emit('trade:positions-closed', {
+  eventBus.emit('trade:positions-closed', {
     count: positions.value.length,
     timestamp: Date.now()
   });
   
-  props.services.notifications?.addNotification({
+  notification?.addNotification({
     type: 'info',
     title: 'Positions Closed',
     message: 'All positions have been closed'
@@ -398,7 +403,7 @@ const cancelPendingOrders = () => {
   });
   
   if (cancelCount > 0) {
-    props.services.notifications?.addNotification({
+    notification?.addNotification({
       type: 'warning',
       title: 'Orders Cancelled',
       message: `${cancelCount} pending orders cancelled`
@@ -415,7 +420,7 @@ const refreshPortfolio = () => {
     position.pnl = ((currentPrice - position.avgPrice) / position.avgPrice) * 100;
   });
   
-  props.services.eventBus.emit('trade:portfolio-refreshed', {
+  eventBus.emit('trade:portfolio-refreshed', {
     positions: positions.value.length,
     totalValue: positions.value.reduce((sum, p) => sum + p.value, 0)
   });
@@ -425,7 +430,7 @@ let unsubscribes: Array<() => void> = [];
 
 onMounted(() => {
   // Listen for stock selection from market watch
-  const unsub1 = props.services.eventBus.on('market:stock-selected', (payload: any) => {
+  const unsub1 = eventBus.on('market:stock-selected', (payload: any) => {
     // Handle both direct payload and wrapped payload formats
     const data = payload.data || payload;
     orderForm.value.symbol = data?.symbol || 'AAPL';
@@ -435,7 +440,7 @@ onMounted(() => {
   });
 
   // Listen for price updates
-  const unsub2 = props.services.eventBus.on('market:price-alert', (payload: any) => {
+  const unsub2 = eventBus.on('market:price-alert', (payload: any) => {
     if (payload.data?.symbol && payload.data?.price) {
       currentPrices.value[payload.data.symbol] = payload.data.price;
       refreshPortfolio();
@@ -443,7 +448,7 @@ onMounted(() => {
   });
 
   // Listen for market status changes
-  const unsub3 = props.services.eventBus.on('analytics:market-status', (payload: any) => {
+  const unsub3 = eventBus.on('analytics:market-status', (payload: any) => {
     marketStatus.value = payload.data?.status || 'open';
   });
 

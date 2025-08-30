@@ -1,5 +1,6 @@
 import { render } from 'solid-js/web';
-import type { MFEModule, MFEServiceContainer } from '@mfe-toolkit/core';
+import type { MFEModule, ServiceContainer } from '@mfe-toolkit/core';
+import '@mfe-toolkit/service-notification/types';
 import { App } from './App';
 
 let cleanup: (() => void) | null = null;
@@ -8,28 +9,26 @@ const module: MFEModule = {
   metadata: {
     name: 'mfe-notification-solidjs',
     version: '1.0.0',
-    requiredServices: ['notification'],
-    capabilities: ['notification-demo']
+    requiredServices: ['logger', 'notification']
   },
 
-  mount: async (element: HTMLElement, container: MFEServiceContainer) => {
-    const services = container.getAllServices();
-    cleanup = render(() => <App services={services} />, element);
+  mount: async (element: HTMLElement, serviceContainer: ServiceContainer) => {
+    const logger = serviceContainer.require('logger');
+    const notification = serviceContainer.require('notification');
+    cleanup = render(() => <App notification={notification} logger={logger} />, element);
     
-    if (services.logger) {
-      services.logger.info('[mfe-notification-solidjs] Mounted successfully');
-    }
+    logger.info('[mfe-notification-solidjs] Mounted successfully');
   },
   
-  unmount: async (container: MFEServiceContainer) => {
+  unmount: async (serviceContainer: ServiceContainer) => {
     if (cleanup) {
       cleanup();
       cleanup = null;
     }
     
-    const services = container.getAllServices();
-    if (services.logger) {
-      services.logger.info('[mfe-notification-solidjs] Unmounted successfully');
+    const logger = serviceContainer.get('logger');
+    if (logger) {
+      logger.info('[mfe-notification-solidjs] Unmounted successfully');
     }
   }
 };

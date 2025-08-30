@@ -1,6 +1,6 @@
 import { createSignal, createEffect, onCleanup, For } from 'solid-js';
 import { render } from 'solid-js/web';
-import type { EventBus, MFEModule, MFEServiceContainer, MFEServices } from '@mfe-toolkit/core';
+import type { MFEModule, ServiceContainer } from '@mfe-toolkit/core';
 
 interface EventEntry {
   id: string;
@@ -10,8 +10,10 @@ interface EventEntry {
   source: 'sent' | 'received';
 }
 
-function EventPlayground(props: { services: MFEServices }) {
-  const { eventBus, logger } = props.services;
+function EventPlayground(props: { serviceContainer: ServiceContainer }) {
+  const { serviceContainer } = props;
+  const eventBus = serviceContainer.require('eventBus');
+  const logger = serviceContainer.require('logger');
   
   // Signals for state management
   const [eventName, setEventName] = createSignal('playground:test');
@@ -100,9 +102,9 @@ function EventPlayground(props: { services: MFEServices }) {
     
     // If it's a pattern, subscribe to all events and filter
     if (eventToListen.endsWith(':*')) {
-      const unsubscribe = eventBus.on('*', (payload) => {
-        const actualEventName = payload.type || payload.eventName || 'unknown';
-        const eventData = payload.data || payload;
+      const unsubscribe = eventBus.on('*', (event) => {
+        const actualEventName = event.type;
+        const eventData = event.data;
         
         // Check if this was recently sent by this MFE
         const eventKey = `${actualEventName}:${JSON.stringify(eventData)}`;
@@ -120,7 +122,7 @@ function EventPlayground(props: { services: MFEServices }) {
             source: 'received'
           });
           
-          logger?.info(`Received event: ${actualEventName} (matched pattern: ${eventToListen})`, payload);
+          logger?.info(`Received event: ${actualEventName} (matched pattern: ${eventToListen})`, event);
         }
       });
       
@@ -129,16 +131,23 @@ function EventPlayground(props: { services: MFEServices }) {
       logger?.info(`Started listening to pattern: ${eventToListen}`);
     } else {
       // For exact event names, subscribe directly
-      const unsubscribe = eventBus.on(eventToListen, (payload) => {
+      const unsubscribe = eventBus.on(eventToListen, (event) => {
+        // Check if this was recently sent by this MFE
+        const eventKey = `${eventToListen}:${JSON.stringify(event.data)}`;
+        if (recentlySentEvents.has(eventKey)) {
+          // Skip this event as it was just sent by us
+          return;
+        }
+        
         addEvent({
           id: `${Date.now()}-${Math.random()}`,
           timestamp: new Date().toLocaleTimeString(),
           eventName: eventToListen,
-          payload: payload.data || payload,
+          payload: event.data,
           source: 'received'
         });
         
-        logger?.info(`Received event: ${eventToListen}`, payload);
+        logger?.info(`Received event: ${eventToListen}`, event);
       });
       
       subscriptions.set(eventToListen, unsubscribe);
@@ -357,26 +366,27 @@ const module: MFEModule = {
   metadata: {
     name: 'mfe-event-playground',
     version: '1.0.0',
-    requiredServices: ['eventBus'],
-    capabilities: ['event-testing', 'event-monitoring', 'json-validation', 'wildcard-subscriptions']
+    requiredServices: ['eventBus', 'logger']
   },
 
-  mount: async (element: HTMLElement, container: MFEServiceContainer) => {
-    const services = container.getAllServices();
+  mount: async (element: HTMLElement, container: ServiceContainer) => {
+    cleanup = render(() => <EventPlayground serviceContainer={container} />, element);
     
-    if (!services?.eventBus) {
-      console.error('Event Bus service is required');
-      return;
+    const logger = container.get('logger');
+    if (logger) {
+      logger.info('[mfe-event-playground] Mounted successfully with Solid.js');
     }
-    
-    cleanup = render(() => <EventPlayground services={services} />, element);
-    services.logger?.info('Event Playground MFE mounted (Solid.js)');
   },
   
-  unmount: async (_container: MFEServiceContainer) => {
+  unmount: async (container: ServiceContainer) => {
     if (cleanup) {
       cleanup();
       cleanup = null;
+    }
+    
+    const logger = container.get('logger');
+    if (logger) {
+      logger.info('[mfe-event-playground] Unmounted successfully');
     }
   }
 };

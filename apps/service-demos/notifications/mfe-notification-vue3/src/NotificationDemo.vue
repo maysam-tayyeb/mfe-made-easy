@@ -142,10 +142,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { MFEServices } from '@mfe-toolkit/core';
+import type { Logger } from '@mfe-toolkit/core';
+import type { NotificationService, NotificationType } from '@mfe-toolkit/service-notification';
 
 interface Props {
-  services: MFEServices;
+  notification: NotificationService;
+  logger: Logger;
 }
 
 const props = defineProps<Props>();
@@ -153,23 +155,22 @@ const props = defineProps<Props>();
 const notificationCount = ref(0);
 const customTitle = ref('Custom Notification');
 const customMessage = ref('This is a custom notification message');
-const customType = ref<'info' | 'success' | 'warning' | 'error'>('info');
+const customType = ref<NotificationType>('info');
 
 const showNotification = (
   title: string,
   message: string,
-  type: 'info' | 'success' | 'warning' | 'error' = 'info',
+  type: NotificationType = 'info',
   duration?: number
 ) => {
-  if (props.services.notification) {
-    props.services.notification.show({
+  props.notification.show({
       title,
       message,
       type,
       duration
-    });
-    notificationCount.value++;
-  }
+  });
+  notificationCount.value++;
+  props.logger.info(`Notification shown: ${title} - ${message}`);
 };
 
 const showSuccess = () => {
@@ -265,8 +266,7 @@ const showMultiple = () => {
 };
 
 const clearAll = () => {
-  if (props.services.notification?.clear) {
-    props.services.notification.clear();
-  }
+  props.notification.dismissAll();
+  props.logger.info('All notifications cleared');
 };
 </script>

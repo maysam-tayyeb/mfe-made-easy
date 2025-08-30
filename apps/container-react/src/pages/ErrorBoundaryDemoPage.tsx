@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MFELoader } from '@mfe-toolkit/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { getMFEServicesSingleton } from '@/services/mfe-services-singleton';
+import { useServices } from '@/contexts/ServiceContext';
 import { Hero, MetricCard, TabGroup, EmptyState } from '@mfe/design-system-react';
 import {
   AlertCircle,
@@ -33,8 +33,8 @@ export const ErrorBoundaryDemoPage: React.FC = () => {
   const [selectedScenario, setSelectedScenario] = useState<string>('');
   const [errorReportVisible, setErrorReportVisible] = useState(false);
   const [, setRefreshKey] = useState(0);
-  const services = getMFEServicesSingleton();
-  const errorReporter = services.errorReporter!;
+  const serviceContainer = useServices();
+  const errorReporter = serviceContainer.get('errorReporter');
 
   const scenarios = [
     {
@@ -72,7 +72,7 @@ export const ErrorBoundaryDemoPage: React.FC = () => {
   ];
 
   const getErrorSummary = () => {
-    const summary = errorReporter.getSummary();
+    const summary = errorReporter?.getSummary();
     return summary;
   };
 
@@ -326,7 +326,7 @@ export const ErrorBoundaryDemoPage: React.FC = () => {
               key={selectedScenario}
               name={`test-${selectedScenario}`}
               url={scenarios.find((s) => s.id === selectedScenario)?.url || ''}
-              services={services}
+              serviceContainer={serviceContainer}
               fallback={
                 <div className="ds-loading-state min-h-[300px]">
                   <div className="ds-spinner-lg"></div>
@@ -335,7 +335,8 @@ export const ErrorBoundaryDemoPage: React.FC = () => {
                 </div>
               }
               onError={(error: Error) => {
-                services.notification.error('MFE Load Failed', error.message);
+                const notification = serviceContainer.get('notification');
+                notification?.error('MFE Load Failed', error.message);
               }}
               isolate={true}
             />
@@ -368,7 +369,7 @@ export const ErrorBoundaryDemoPage: React.FC = () => {
             </Button>
             <Button
               onClick={() => {
-                errorReporter.clearErrors();
+                errorReporter?.clearErrors();
                 setErrorReportVisible(false);
                 setRefreshKey((prev) => prev + 1);
               }}
@@ -394,7 +395,7 @@ export const ErrorBoundaryDemoPage: React.FC = () => {
                   <div key={type} className="flex items-center justify-between">
                     <span className="text-sm">{type}</span>
                     <Badge variant="secondary" className="text-xs">
-                      {count}
+                      {count as React.ReactNode}
                     </Badge>
                   </div>
                 ))}
@@ -416,7 +417,7 @@ export const ErrorBoundaryDemoPage: React.FC = () => {
                       variant={severity === 'critical' ? 'destructive' : 'secondary'}
                       className="text-xs"
                     >
-                      {count}
+                      {count as React.ReactNode}
                     </Badge>
                   </div>
                 ))}
@@ -435,7 +436,7 @@ export const ErrorBoundaryDemoPage: React.FC = () => {
                   <div key={mfe} className="flex items-center justify-between">
                     <span className="text-sm truncate">{mfe}</span>
                     <Badge variant="secondary" className="text-xs">
-                      {count}
+                      {count as React.ReactNode}
                     </Badge>
                   </div>
                 ))}
@@ -448,7 +449,7 @@ export const ErrorBoundaryDemoPage: React.FC = () => {
         {errorReportVisible && (
           <div className="border-t pt-4">
             <h3 className="ds-card-title ds-mb-sm">Error Details</h3>
-            {errorReporter.getErrors().length === 0 ? (
+            {(errorReporter?.getErrors()?.length ?? 0) === 0 ? (
               <EmptyState
                 title="No errors recorded"
                 description="Errors will appear here when they occur"
@@ -456,7 +457,7 @@ export const ErrorBoundaryDemoPage: React.FC = () => {
               />
             ) : (
               <div className="space-y-3 max-h-96 overflow-y-auto">
-                {errorReporter.getErrors().map((error) => (
+                {errorReporter?.getErrors()?.map((error: any) => (
                   <div
                     key={error.id}
                     className={`ds-card-compact ${

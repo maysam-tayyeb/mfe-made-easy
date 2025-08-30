@@ -1,5 +1,6 @@
 import { createApp } from 'vue';
-import type { MFEModule, MFEServiceContainer } from '@mfe-toolkit/core';
+import type { MFEModule, ServiceContainer } from '@mfe-toolkit/core';
+import '@mfe-toolkit/service-notification/types';
 import NotificationDemo from './NotificationDemo.vue';
 
 let app: any = null;
@@ -8,30 +9,31 @@ const module: MFEModule = {
   metadata: {
     name: 'mfe-notification-vue3',
     version: '1.0.0',
-    requiredServices: ['notification'],
-    capabilities: ['notification-demo']
+    requiredServices: ['logger', 'notification']
   },
 
-  mount: async (element: HTMLElement, container: MFEServiceContainer) => {
-    const services = container.getAllServices();
+  mount: async (element: HTMLElement, serviceContainer: ServiceContainer) => {
+    const logger = serviceContainer.require('logger');
+    const notification = serviceContainer.require('notification');
     
-    app = createApp(NotificationDemo, { services });
+    app = createApp(NotificationDemo, { 
+      notification,
+      logger 
+    });
     app.mount(element);
     
-    if (services.logger) {
-      services.logger.info('[mfe-notification-vue3] Mounted successfully');
-    }
+    logger.info('[mfe-notification-vue3] Mounted successfully');
   },
   
-  unmount: async (container: MFEServiceContainer) => {
+  unmount: async (serviceContainer: ServiceContainer) => {
     if (app) {
       app.unmount();
       app = null;
     }
     
-    const services = container.getAllServices();
-    if (services.logger) {
-      services.logger.info('[mfe-notification-vue3] Unmounted successfully');
+    const logger = serviceContainer.get('logger');
+    if (logger) {
+      logger.info('[mfe-notification-vue3] Unmounted successfully');
     }
   }
 };

@@ -50,6 +50,12 @@ The MFE Platform is a comprehensive, framework-agnostic toolkit that enables tea
 - ✅ **Import Map Generation** - Automatic dependency detection and versioning
 - ✅ **CLI Improvements** - Multi-version React support, proper manifest generation
 - ✅ **Codebase Cleanup** - Removed all V1/V2 references, unified to single MFEModule pattern
+- ✅ **Service Registry Architecture** - Complete audit and improvements
+- ✅ **CLI Template System Refactor** - Migrated to separated template files with template engine
+- ✅ **Registry Management Commands** - Added add/remove/update/list operations to CLI
+- ✅ **CLI Simplification** - Removed redundant commands, made framework-agnostic
+- ✅ **Auto-update Registry** - Create command now automatically adds MFE to registry
+- ✅ **CLI Test Suite** - Added comprehensive tests for all CLI commands
 
 ### Current Focus
 
@@ -111,14 +117,14 @@ The MFE Platform is a comprehensive, framework-agnostic toolkit that enables tea
 
 ### Week 2: Supporting Package Testing Sprint (Days 6-10)
 
-#### Days 6-7: @mfe-toolkit/cli
-- [ ] Test create command
-- [ ] Test template generation for all frameworks
-- [ ] Test manifest generation
-- [ ] Test manifest validation command
-- [ ] Verify generated projects actually build
-- [ ] Test error handling
-- [ ] Achieve 60%+ coverage
+#### Days 6-7: @mfe-toolkit/cli ✅ COMPLETED
+- [x] Test create command (14 tests)
+- [x] Test template generation for all frameworks
+- [x] Test manifest generation
+- [x] Test manifest validation command
+- [x] Test registry management commands (12 tests)
+- [x] Test error handling
+- [x] **36 tests passing** - Good coverage achieved
 
 #### Days 8-9: @mfe-toolkit/dev
 - [ ] Add LICENSE file
@@ -455,6 +461,49 @@ Once all tests are complete and passing:
 ---
 
 ## Q4 2025 Roadmap
+
+### Container Improvements (Added from User Request)
+
+#### Visual MFE Management UI
+- **Status**: Planning
+- **Features**:
+  - Interactive registry management dashboard
+  - Visual MFE dependency graph
+  - Drag-and-drop MFE arrangement
+  - Real-time MFE status monitoring
+  - Performance metrics dashboard
+- **Target**: Q4 2025
+
+#### Runtime MFE Health Monitoring
+- **Status**: Planning
+- **Features**:
+  - Health check endpoints for each MFE
+  - Automatic error recovery and retry
+  - Performance anomaly detection
+  - Resource usage tracking
+  - Alert system for failures
+- **Target**: Q4 2025
+
+### Enhanced MFE Communication (Added from User Request)
+
+#### RPC-Style Communication
+- **Status**: Planning
+- **Features**:
+  - Request/response pattern for event bus
+  - Promise-based API for inter-MFE calls
+  - Timeout and retry mechanisms
+  - Error propagation across MFEs
+- **Target**: Q4 2025
+
+#### Typed Event Contracts
+- **Status**: Planning
+- **Features**:
+  - TypeScript interfaces for events
+  - Runtime validation of event payloads
+  - Contract versioning
+  - Breaking change detection
+  - Auto-generated documentation
+- **Target**: Q4 2025
 
 ### Enterprise Features
 

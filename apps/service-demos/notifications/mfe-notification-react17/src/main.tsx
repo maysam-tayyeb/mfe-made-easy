@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import type { MFEModule, MFEServiceContainer } from '@mfe-toolkit/core';
+import type { MFEModule, ServiceContainer } from '@mfe-toolkit/core';
+import '@mfe-toolkit/service-notification/types';
 import { App } from './App';
 
 let rootElement: HTMLElement | null = null;
@@ -9,35 +10,33 @@ const module: MFEModule = {
   metadata: {
     name: 'mfe-notification-react17',
     version: '1.0.0',
-    requiredServices: ['notification'],
-    capabilities: ['notification-demo']
+    requiredServices: ['logger', 'notification']
   },
 
-  mount: async (element: HTMLElement, container: MFEServiceContainer) => {
-    const services = container.getAllServices();
+  mount: async (element: HTMLElement, serviceContainer: ServiceContainer) => {
+    const logger = serviceContainer.require('logger');
+    const notification = serviceContainer.require('notification');
     rootElement = element;
     
     ReactDOM.render(
       <React.StrictMode>
-        <App services={services} />
+        <App notification={notification} logger={logger} />
       </React.StrictMode>,
       element
     );
     
-    if (services.logger) {
-      services.logger.info('[mfe-notification-react17] Mounted successfully');
-    }
+    logger.info('[mfe-notification-react17] Mounted successfully');
   },
   
-  unmount: async (container: MFEServiceContainer) => {
+  unmount: async (serviceContainer: ServiceContainer) => {
     if (rootElement) {
       ReactDOM.unmountComponentAtNode(rootElement);
       rootElement = null;
     }
     
-    const services = container.getAllServices();
-    if (services.logger) {
-      services.logger.info('[mfe-notification-react17] Unmounted successfully');
+    const logger = serviceContainer.get('logger');
+    if (logger) {
+      logger.info('[mfe-notification-react17] Unmounted successfully');
     }
   }
 };

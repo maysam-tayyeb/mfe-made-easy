@@ -20,7 +20,6 @@ import {
   GitBranch,
 } from 'lucide-react';
 import { Hero, MetricCard } from '@mfe/design-system-react';
-import { MFE_CONFIG } from '@mfe/shared';
 import { usePlatformMetrics } from '@/hooks/usePlatformMetrics';
 import { useRegistryContext } from '@/contexts/RegistryContext';
 

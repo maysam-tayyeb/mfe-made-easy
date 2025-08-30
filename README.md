@@ -18,6 +18,9 @@ A production-ready toolkit and reference architecture for building enterprise-gr
 - 📱 **Mobile-Responsive** - Adaptive layouts with `ds-sm:*`, `ds-md:*`, `ds-lg:*` breakpoints
 - 🔄 **Dual Loading Strategies** - Standard and Isolated loaders for React and non-React MFEs
 - 📊 **Performance Monitoring** - Built-in middleware for state management performance tracking
+- 📝 **Registry Management** - CLI commands for managing MFE registry (add/remove/update/list)
+- 🎯 **Auto-Registry Updates** - MFE creation automatically updates registry
+- ✅ **Comprehensive Testing** - All packages now have test suites
 
 ## 🏗️ Architecture Overview
 

@@ -2,8 +2,8 @@
 
 import { program } from 'commander';
 import { createCommand } from './commands/create';
-import { generateCommand } from './commands/generate';
 import { validateCommand } from './commands/validate';
+import { registryCommand } from './commands/registry';
 
 program
   .name('mfe-toolkit')
@@ -11,7 +11,7 @@ program
   .version('0.1.0');
 
 program.addCommand(createCommand);
-program.addCommand(generateCommand);
 program.addCommand(validateCommand);
+program.addCommand(registryCommand);
 
 program.parse();

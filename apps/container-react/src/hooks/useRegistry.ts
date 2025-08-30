@@ -64,15 +64,55 @@ export function useRegistry(options: UseRegistryOptions = {}): UseRegistryResult
           name: 'example',
           version: '1.0.0',
           url: 'http://localhost:3001/mfe-example.js',
-          dependencies: ['react', 'react-dom'],
-          sharedLibs: ['@reduxjs/toolkit', 'react-redux'],
+          dependencies: {
+            runtime: {
+              'react': '^18.0.0',
+              'react-dom': '^18.0.0'
+            },
+            peer: {}
+          },
+          compatibility: {
+            container: '^1.0.0'
+          },
+          capabilities: {
+            emits: [],
+            listens: [],
+            features: []
+          },
+          requirements: {
+            services: []
+          },
+          metadata: {
+            displayName: 'Example MFE',
+            description: 'Example microfrontend'
+          }
         });
         registry.register({
           name: 'react17',
           version: '1.0.0',
           url: 'http://localhost:3002/react17-mfe.js',
-          dependencies: ['react', 'react-dom'],
-          sharedLibs: ['@reduxjs/toolkit', 'react-redux'],
+          dependencies: {
+            runtime: {
+              'react': '^17.0.0',
+              'react-dom': '^17.0.0'
+            },
+            peer: {}
+          },
+          compatibility: {
+            container: '^1.0.0'
+          },
+          capabilities: {
+            emits: [],
+            listens: [],
+            features: []
+          },
+          requirements: {
+            services: []
+          },
+          metadata: {
+            displayName: 'React 17 MFE',
+            description: 'React 17 microfrontend'
+          }
         });
       }
     } finally {

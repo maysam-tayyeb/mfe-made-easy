@@ -1,31 +1,32 @@
 import { Component, createSignal } from 'solid-js';
-import type { MFEServices } from '@mfe-toolkit/core';
+import type { Logger } from '@mfe-toolkit/core';
+import type { NotificationService, NotificationType } from '@mfe-toolkit/service-notification/types';
 
 interface AppProps {
-  services: MFEServices;
+  notification: NotificationService;
+  logger: Logger;
 }
 
-export const App: Component<AppProps> = (props) => {
+export const App: Component<AppProps> = ({ notification, logger }) => {
   const [notificationCount, setNotificationCount] = createSignal(0);
   const [customTitle, setCustomTitle] = createSignal('Custom Notification');
   const [customMessage, setCustomMessage] = createSignal('This is a custom notification message');
-  const [customType, setCustomType] = createSignal<'info' | 'success' | 'warning' | 'error'>('info');
+  const [customType, setCustomType] = createSignal<NotificationType>('info');
 
   const showNotification = (
     title: string,
     message: string,
-    type: 'info' | 'success' | 'warning' | 'error' = 'info',
+    type: NotificationType = 'info',
     duration?: number
   ) => {
-    if (props.services.notification) {
-      props.services.notification.show({
+    notification.show({
         title,
         message,
         type,
         duration
-      });
-      setNotificationCount(c => c + 1);
-    }
+    });
+    setNotificationCount(c => c + 1);
+    logger.info(`Notification shown: ${title} - ${message}`);
   };
 
   const showSuccess = () => {
@@ -121,9 +122,8 @@ export const App: Component<AppProps> = (props) => {
   };
 
   const clearAll = () => {
-    if (props.services.notification?.clear) {
-      props.services.notification.clear();
-    }
+    notification.dismissAll();
+    logger.info('All notifications cleared');
   };
 
   return (

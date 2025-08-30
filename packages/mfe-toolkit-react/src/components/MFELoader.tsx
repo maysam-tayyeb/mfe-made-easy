@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { MFEServices, MFEModule, MFEServiceContainer } from '../types';
-import { createServiceContainer } from '@mfe-toolkit/core';
+import type { MFEModule, ServiceContainer } from '@mfe-toolkit/core';
 import { MFEErrorBoundary } from './MFEErrorBoundary';
 import { getErrorReporter } from '../services/error-reporter';
 
 interface MFELoaderProps {
   name: string;
   url: string;
-  services: MFEServices;
+  serviceContainer: ServiceContainer;
   fallback?: React.ReactNode;
   onError?: (error: Error) => void;
   maxRetries?: number;
@@ -27,7 +26,7 @@ interface LoaderState {
 const IsolatedLoaderStrategy: React.FC<MFELoaderProps> = ({
   name,
   url,
-  services,
+  serviceContainer,
   fallback = <div>Loading MFE...</div>,
   onError,
 }) => {
@@ -35,7 +34,7 @@ const IsolatedLoaderStrategy: React.FC<MFELoaderProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const mfeInstanceRef = useRef<any>(null);
-  const serviceContainerRef = useRef<MFEServiceContainer | null>(null);
+  const serviceContainerRef = useRef<ServiceContainer | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
 
   // Use ref to avoid stale closure
@@ -47,7 +46,7 @@ const IsolatedLoaderStrategy: React.FC<MFELoaderProps> = ({
 
     const loadAndMountMFE = async () => {
       try {
-        services.logger.debug(`[IsolatedLoader] Loading ${name} from ${url}`);
+        serviceContainer.get('logger')?.debug(`[IsolatedLoader] Loading ${name} from ${url}`);
 
         // Import the MFE module
         const module = await import(/* @vite-ignore */ url);
@@ -71,8 +70,8 @@ const IsolatedLoaderStrategy: React.FC<MFELoaderProps> = ({
           containerRef.current.innerHTML = '';
           containerRef.current.appendChild(mfeContainer);
 
-          services.logger.info(`[IsolatedLoader] Mounting ${name}`);
-          const container = createServiceContainer(services);
+          serviceContainer.get('logger')?.info(`[IsolatedLoader] Mounting ${name}`);
+          const container = serviceContainer; // Already a ServiceContainer
           serviceContainerRef.current = container;
           await module.default.mount(mfeContainer, container);
           mfeInstanceRef.current = module.default;
@@ -81,27 +80,27 @@ const IsolatedLoaderStrategy: React.FC<MFELoaderProps> = ({
           if (module.default.unmount) {
             cleanupRef.current = () => {
               try {
-                services.logger.debug(`[IsolatedLoader] Unmounting ${name}`);
-                const unmountContainer = serviceContainerRef.current || createServiceContainer(services);
+                serviceContainer.get('logger')?.debug(`[IsolatedLoader] Unmounting ${name}`);
+                const unmountContainer = serviceContainerRef.current || serviceContainer;
                 module.default.unmount(unmountContainer);
                 serviceContainerRef.current = null;
               } catch (err) {
-                services.logger.error(`Error unmounting ${name}:`, err);
+                serviceContainer.get('logger')?.error(`Error unmounting ${name}:`, err);
               }
             };
           }
 
           setLoading(false);
-          services.logger.info(`[IsolatedLoader] ${name} mounted successfully`);
+          serviceContainer.get('logger')?.info(`[IsolatedLoader] ${name} mounted successfully`);
         }
       } catch (err) {
         if (!isMounted) return;
 
         const error = err instanceof Error ? err : new Error('Unknown error');
-        services.logger.error(`[IsolatedLoader] Error loading ${name}:`, error);
+        serviceContainer.get('logger')?.error(`[IsolatedLoader] Error loading ${name}:`, error);
 
         // Report error to error reporter
-        const errorReporter = services.errorReporter || getErrorReporter({}, services);
+        const errorReporter = getErrorReporter({}, serviceContainer);
         const errorType = error.message.includes('timeout')
           ? 'timeout-error'
           : error.message.includes('network')
@@ -151,7 +150,7 @@ const IsolatedLoaderStrategy: React.FC<MFELoaderProps> = ({
         containerRef.current.innerHTML = '';
       }
     };
-  }, [name, url, services]); // Include services but it should be stable
+  }, [name, url, serviceContainer]); // Include serviceContainer but it should be stable
 
   if (error) {
     return (
@@ -179,7 +178,7 @@ const IsolatedLoaderStrategy: React.FC<MFELoaderProps> = ({
 const StandardLoaderStrategy: React.FC<MFELoaderProps> = ({
   name,
   url,
-  services,
+  serviceContainer,
   fallback = <div>Loading MFE...</div>,
   onError,
   maxRetries = 3,
@@ -192,7 +191,7 @@ const StandardLoaderStrategy: React.FC<MFELoaderProps> = ({
     retryCount: 0,
   });
   const mfeRef = useRef<MFEModule | null>(null);
-  const serviceContainerRef = useRef<MFEServiceContainer | null>(null);
+  const serviceContainerRef = useRef<ServiceContainer | null>(null);
   const mountedRef = useRef<boolean>(false);
   const loadingRef = useRef<boolean>(false);
   const retryTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -200,13 +199,15 @@ const StandardLoaderStrategy: React.FC<MFELoaderProps> = ({
   const loadMFE = useCallback(async () => {
     // Prevent concurrent loads
     if (loadingRef.current) {
-      services.logger.debug(`MFE ${name} is already loading, skipping duplicate load`);
+      serviceContainer
+        .get('logger')
+        ?.debug(`MFE ${name} is already loading, skipping duplicate load`);
       return;
     }
 
     // If already mounted, skip loading
     if (mountedRef.current && mfeRef.current) {
-      services.logger.debug(`MFE ${name} is already mounted, skipping load`);
+      serviceContainer.get('logger')?.debug(`MFE ${name} is already mounted, skipping load`);
       return;
     }
 
@@ -216,7 +217,7 @@ const StandardLoaderStrategy: React.FC<MFELoaderProps> = ({
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       console.log(`[MFELoader] Starting to load MFE ${name} from URL: ${url}`);
-      services.logger.info(`Loading MFE ${name} from URL: ${url}`);
+      serviceContainer.get('logger')?.info(`Loading MFE ${name} from URL: ${url}`);
       const mfeModule = await import(/* @vite-ignore */ url);
 
       const mfe = mfeModule.default as MFEModule;
@@ -246,8 +247,8 @@ const StandardLoaderStrategy: React.FC<MFELoaderProps> = ({
           if (containerRef.current && mfeRef.current && !mountedRef.current) {
             try {
               console.log(`[MFELoader] Mounting MFE ${name} to container`);
-              services.logger.info(`Mounting MFE ${name}`);
-              const container = createServiceContainer(services);
+              serviceContainer.get('logger')?.info(`Mounting MFE ${name}`);
+              const container = serviceContainer; // Already a ServiceContainer
               serviceContainerRef.current = container;
               await mfeRef.current.mount(containerRef.current, container);
               mountedRef.current = true;
@@ -268,8 +269,8 @@ const StandardLoaderStrategy: React.FC<MFELoaderProps> = ({
             if (containerRef.current && mfeRef.current && !mountedRef.current) {
               try {
                 console.log(`[MFELoader] Mounting MFE ${name} to container (after frame)`);
-                services.logger.info(`Mounting MFE ${name}`);
-                const container = createServiceContainer(services);
+                serviceContainer.get('logger')?.info(`Mounting MFE ${name}`);
+                const container = serviceContainer; // Already a ServiceContainer
                 serviceContainerRef.current = container;
                 await mfeRef.current.mount(containerRef.current, container);
                 mountedRef.current = true;
@@ -292,15 +293,15 @@ const StandardLoaderStrategy: React.FC<MFELoaderProps> = ({
       });
 
       setState((prev) => ({ ...prev, loading: false }));
-      services.logger.info(`MFE ${name} ready`);
+      serviceContainer.get('logger')?.info(`MFE ${name} ready`);
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error loading MFE');
 
       console.error(`[MFELoader] Failed to load MFE ${name}:`, error);
-      services.logger.error(`Failed to load MFE ${name}: ${error.message}`);
+      serviceContainer.get('logger')?.error(`Failed to load MFE ${name}: ${error.message}`);
 
       // Report error
-      const errorReporter = services.errorReporter || getErrorReporter({}, services);
+      const errorReporter = getErrorReporter({}, serviceContainer);
       const errorType = error.message.includes('timeout')
         ? 'timeout-error'
         : error.message.includes('network')
@@ -314,9 +315,11 @@ const StandardLoaderStrategy: React.FC<MFELoaderProps> = ({
 
       // Handle retry logic
       if (state.retryCount < maxRetries) {
-        services.logger.info(
-          `Retrying MFE ${name} in ${retryDelay}ms (attempt ${state.retryCount + 1}/${maxRetries})`
-        );
+        serviceContainer
+          .get('logger')
+          ?.info(
+            `Retrying MFE ${name} in ${retryDelay}ms (attempt ${state.retryCount + 1}/${maxRetries})`
+          );
 
         setState((prev) => ({
           ...prev,
@@ -341,7 +344,7 @@ const StandardLoaderStrategy: React.FC<MFELoaderProps> = ({
     } finally {
       loadingRef.current = false;
     }
-  }, [name, url, services, state.retryCount, maxRetries, retryDelay, onError]);
+  }, [name, url, serviceContainer, state.retryCount, maxRetries, retryDelay, onError]);
 
   // Store previous name/url to detect actual changes
   const prevNameRef = useRef(name);
@@ -356,14 +359,16 @@ const StandardLoaderStrategy: React.FC<MFELoaderProps> = ({
       // Unmount previous MFE if it exists
       if (mfeRef.current && mfeRef.current.unmount && mountedRef.current) {
         try {
-          services.logger.info(`Unmounting previous MFE ${prevNameRef.current}`);
-          const container = serviceContainerRef.current || createServiceContainer(services);
+          serviceContainer.get('logger')?.info(`Unmounting previous MFE ${prevNameRef.current}`);
+          const container = serviceContainerRef.current || serviceContainer;
           mfeRef.current.unmount(container);
           mountedRef.current = false;
           serviceContainerRef.current = null;
           mfeRef.current = null;
         } catch (err) {
-          services.logger.error(`Error unmounting MFE ${prevNameRef.current}:`, err);
+          serviceContainer
+            .get('logger')
+            ?.error(`Error unmounting MFE ${prevNameRef.current}:`, err);
         }
       }
 
@@ -392,14 +397,14 @@ const StandardLoaderStrategy: React.FC<MFELoaderProps> = ({
       // This cleanup only runs when component is truly unmounting
       if (mfeRef.current && mfeRef.current.unmount && mountedRef.current) {
         try {
-          services.logger.info(`Component unmounting, cleaning up MFE ${name}`);
-          const container = serviceContainerRef.current || createServiceContainer(services);
+          serviceContainer.get('logger')?.info(`Component unmounting, cleaning up MFE ${name}`);
+          const container = serviceContainerRef.current || serviceContainer;
           mfeRef.current.unmount(container);
           mountedRef.current = false;
           serviceContainerRef.current = null;
           mfeRef.current = null;
         } catch (err) {
-          services.logger.error(`Error unmounting MFE ${name}:`, err);
+          serviceContainer.get('logger')?.error(`Error unmounting MFE ${name}:`, err);
         }
       }
       // Clear the container content
@@ -474,7 +479,7 @@ export const MFELoader: React.FC<MFELoaderProps> = (props) => {
   return (
     <MFEErrorBoundary
       mfeName={props.name}
-      services={props.services}
+      services={props.serviceContainer}
       fallback={
         errorFallback ||
         ((error, _errorInfo, retry) => (

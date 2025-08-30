@@ -1,39 +1,15 @@
-import React, { createContext, useContext, useMemo } from 'react';
-import { MFEServices } from '../types';
-
-export interface ServiceContainer {
-  getService<T extends keyof MFEServices>(serviceName: T): MFEServices[T];
-  hasService(serviceName: keyof MFEServices): boolean;
-  getAllServices(): MFEServices;
-}
+import React, { createContext, useContext } from 'react';
+import type { ServiceContainer } from '@mfe-toolkit/core';
 
 const MFEServicesContext = createContext<ServiceContainer | null>(null);
 
 export interface MFEServicesProviderProps {
-  services: MFEServices;
+  serviceContainer: ServiceContainer;
   children: React.ReactNode;
 }
 
-export const MFEServicesProvider: React.FC<MFEServicesProviderProps> = ({ services, children }) => {
-  const container = useMemo<ServiceContainer>(
-    () => ({
-      getService<T extends keyof MFEServices>(serviceName: T): MFEServices[T] {
-        if (!(serviceName in services)) {
-          throw new Error(`Service "${serviceName}" not found in container`);
-        }
-        return services[serviceName];
-      },
-      hasService(serviceName: keyof MFEServices): boolean {
-        return serviceName in services;
-      },
-      getAllServices(): MFEServices {
-        return services;
-      },
-    }),
-    [services]
-  );
-
-  return <MFEServicesContext.Provider value={container}>{children}</MFEServicesContext.Provider>;
+export const MFEServicesProvider: React.FC<MFEServicesProviderProps> = ({ serviceContainer, children }) => {
+  return <MFEServicesContext.Provider value={serviceContainer}>{children}</MFEServicesContext.Provider>;
 };
 
 export const useMFEServices = (): ServiceContainer => {
@@ -44,16 +20,7 @@ export const useMFEServices = (): ServiceContainer => {
   return context;
 };
 
-export const useMFEService = <T extends keyof MFEServices>(serviceName: T): MFEServices[T] => {
-  const container = useMFEServices();
-  return container.getService(serviceName);
-};
-
-export const withMFEServices = <P extends object>(
-  Component: React.ComponentType<P & { services: MFEServices }>
-): React.ComponentType<P> => {
-  return (props: P) => {
-    const container = useMFEServices();
-    return <Component {...props} services={container.getAllServices()} />;
-  };
+export const useMFEService = <T = any>(serviceName: string): T | undefined => {
+  const services = useMFEServices();
+  return services.get(serviceName as any) as T | undefined;
 };
